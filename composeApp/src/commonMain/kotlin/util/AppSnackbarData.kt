@@ -3,9 +3,8 @@ package util
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarVisuals
 import androidx.compose.runtime.Stable
-import io.ktor.server.application.hooks.ResponseBodyReadyForSend
 
-data class SnackbarData(
+data class AppSnackbarData(
     val title: String,
     val subtitle: String?,
     val type: Type = Type.NORMAL,
@@ -17,7 +16,7 @@ data class SnackbarData(
         NORMAL, ERROR;
     }
 
-    fun toVisuals(context: ResponseBodyReadyForSend.Context) = AppSnackbarVisuals(
+    fun toVisuals() = AppSnackbarVisuals(
         message = title,
         subtitle = subtitle,
         type = type,
@@ -33,6 +32,6 @@ data class AppSnackbarVisuals(
     override val message: String,
     override val withDismissAction: Boolean = false,
     val subtitle: String?,
-    val type: SnackbarData.Type,
+    val type: AppSnackbarData.Type,
     val showCloseRow: Boolean,
 ) : SnackbarVisuals

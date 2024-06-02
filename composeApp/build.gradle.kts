@@ -1,8 +1,6 @@
 
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.plugin.mpp.BitcodeEmbeddingMode
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 
 plugins {
@@ -105,6 +103,9 @@ kotlin {
 
             implementation("tech.annexflow.compose:constraintlayout-compose-multiplatform:0.3.1")
 
+            val napier = "2.7.1"
+            implementation("io.github.aakira:napier:$napier")
+
             val coil = "3.0.0-alpha01"
             implementation("io.coil-kt.coil3:coil:$coil")
             implementation("io.coil-kt.coil3:coil-compose-core:$coil")
@@ -169,10 +170,6 @@ android {
 
     buildFeatures {
         compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.12"
     }
 
     compileOptions {

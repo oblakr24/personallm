@@ -10,18 +10,21 @@ import Foundation
 import ComposeApp
 import UIKit
 
-
 class AppDelegate: NSObject, UIApplicationDelegate {
     
-    let diComponent: AppComponent = InjectAppComponent()
+       let diComponent: AppComponent = InjectAppComponent()
        var root: RootComponent!
+       var backDispatcher: BackDispatcher!
 
        override init() {
-
            diComponent.platformProviders = PlatformProviders()
            super.init()
+           backDispatcher = AppKt.createBackDispatcher()
+
+           let componentContext = AppKt.customDefaultComponentContext(backDispatcher: backDispatcher, lifecycle: ApplicationLifecycle())
+
            root = DefaultRootComponent(
-               componentContext: DefaultComponentContext(lifecycle: ApplicationLifecycle()),
+               componentContext: componentContext,
                diComponent: diComponent
            )
        }

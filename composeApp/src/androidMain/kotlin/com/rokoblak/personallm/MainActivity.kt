@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
             )
 
         setContent {
-            App(appComponent, root = root)
+            App(root = root)
         }
     }
 }

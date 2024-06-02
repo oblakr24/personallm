@@ -1,10 +1,8 @@
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.arkivanov.decompose.DefaultComponentContext
-import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.arkivanov.decompose.extensions.compose.jetbrains.lifecycle.LifecycleController
+import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import di.AppComponent
 import di.PlatformProviders
@@ -12,7 +10,6 @@ import di.create
 import navigation.DefaultRootComponent
 import javax.swing.SwingUtilities
 
-@OptIn(ExperimentalDecomposeApi::class)
 fun main() {
 
     val appComponent = AppComponent::class.create().apply {
@@ -34,8 +31,7 @@ fun main() {
         LifecycleController(lifecycle, windowState)
 
         Window(onCloseRequest = ::exitApplication, state = windowState, title = "PersonaLLM") {
-
-            App(component = appComponent, root = root)
+            App(root = root)
         }
     }
 }

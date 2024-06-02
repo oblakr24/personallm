@@ -1,0 +1,36 @@
+CREATE TABLE ChatMessageEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    chatId TEXT NOT NULL,
+    content TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,  -- Storing as INTEGER (Unix Timestamp)
+    fromUser INTEGER NOT NULL,   -- Storing as INTEGER (0 for false, 1 for true)
+    finished INTEGER NOT NULL,   -- Storing as INTEGER (0 for false, 1 for true)
+    FOREIGN KEY(chatId) REFERENCES ChatEntity(id)
+);
+
+-- Queries
+-- Select all messages for a specific chat ID
+selectMessagesForChat:
+SELECT *
+FROM ChatMessageEntity
+WHERE chatId = ?;
+
+-- Select all messages
+selectAllMessages:
+SELECT *
+FROM ChatMessageEntity;
+
+-- Insert a new message
+insertMessage:
+INSERT INTO ChatMessageEntity (id, chatId, content, timestamp, fromUser, finished)
+VALUES (?, ?, ?, ?, ?, ?);
+
+inserFullMessage:
+INSERT OR REPLACE INTO ChatMessageEntity (id, chatId, content, timestamp, fromUser, finished)
+VALUES ?;
+
+-- Update an existing message
+updateMessage:
+UPDATE ChatMessageEntity
+SET content = ?, timestamp = ?, fromUser = ?, finished = ?
+WHERE id = ?;

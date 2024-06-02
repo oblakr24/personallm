@@ -1,0 +1,24 @@
+CREATE TABLE ChatEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    version INTEGER NOT NULL,
+    creationTimestamp INTEGER NOT NULL,
+    lastMessageTimestamp INTEGER NOT NULL,
+    summary TEXT NOT NULL
+);
+
+-- Queries
+-- Select all chats
+selectAllChats:
+SELECT *
+FROM ChatEntity;
+
+-- Select a chat by ID
+selectChatById:
+SELECT *
+FROM ChatEntity
+WHERE id = ?;
+
+-- Upsert a chat
+insertOrReplaceChat:
+INSERT OR REPLACE INTO ChatEntity (id, version, creationTimestamp, lastMessageTimestamp, summary)
+VALUES (?, ?, ?, ?, ?);
