@@ -9,7 +9,7 @@ import personallm.db.Database
 
 actual class DriverFactory(private val context: Context) {
     actual fun createDriver(): SqlDriver {
-        return AndroidSqliteDriver(Database.Schema.synchronous(), context, "test.db")
+        return AndroidSqliteDriver(Database.Schema.synchronous(), context, "app_main.db")
     }
 }
 

@@ -1,6 +1,8 @@
 package di
 
+import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.Preferences
 import data.DatastorePrefsFactory
@@ -10,15 +12,16 @@ import db.DriverFactory
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
+import java.io.File
 
-actual class PlatformProviders {
+actual class PlatformProviders(private val appContext: Context) {
 
     actual fun initialize() {
         Napier.base(DebugAntilog())
     }
 
     actual fun driverFactory(): DriverFactory {
-        return DriverFactory()
+        return DriverFactory(context = appContext)
     }
 
     private val prefsFactory by lazy {
@@ -30,9 +33,12 @@ actual class PlatformProviders {
                 return createDataStoreWithDefaults(
                     corruptionHandler = corruptionHandler,
                     coroutineScope = coroutineScope,
-                    path = { SETTINGS_PREFERENCES }
+                    path = {
+                        File(appContext.filesDir, "datastore/$SETTINGS_PREFERENCES").path
+                    }
                 )
             }
+
         }
     }
 

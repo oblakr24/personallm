@@ -1,0 +1,26 @@
+CREATE TABLE listingItem (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  text TEXT NOT NULL
+);
+
+CREATE INDEX listingItem_text ON listingItem(text);
+
+-- INSERT INTO listingItem (id, text)
+-- VALUES ("1", 'Ryan Getzlaf');
+
+selectAll:
+SELECT *
+FROM listingItem;
+
+-- insert:
+-- INSERT INTO listingItem(id, text)
+-- VALUES (?, ?);
+--
+-- insertFullObject:
+-- INSERT INTO listingItem(id, text)
+-- VALUES ?;
+
+-- Insert a new record without specifying an id
+insert:
+INSERT INTO listingItem(text)
+VALUES (?);
