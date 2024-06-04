@@ -17,7 +17,6 @@ import feature.commonui.MessageDisplayData
 import feature.commonui.TitledScaffold
 import feature.commonui.verticalScrollbar
 
-
 data class ChatContentUIState(
     val messages: List<MessageDisplayData> = emptyList(),
 )
@@ -27,7 +26,6 @@ fun ChatContent(
     state: ChatContentUIState,
     text: String, onAction: (ChatAction) -> Unit, onBackClicked: () -> Unit
 ) {
-
     TitledScaffold("Chat", onBackClicked = onBackClicked, content = {
         val lazyListState = rememberLazyListState()
 

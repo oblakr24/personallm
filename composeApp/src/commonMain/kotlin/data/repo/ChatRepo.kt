@@ -5,15 +5,20 @@ import data.ChatCompletionsRequestBody.MessageItem.Companion.ROLE_SYSTEM
 import data.ChatCompletionsRequestBody.MessageItem.Companion.ROLE_USER
 import data.OpenAIAPIWrapper
 import db.AppDatabase
+import di.Singleton
 import hockey.data.ChatEntity
 import hockey.data.ChatMessageEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -22,6 +27,7 @@ import me.tatarka.inject.annotations.Inject
 import util.randomUUID
 import kotlin.math.sign
 
+@Singleton
 @Inject
 class ChatRepo(
     private val api: OpenAIAPIWrapper,
@@ -88,7 +94,7 @@ class ChatRepo(
 
     fun flow(chatId: String): Flow<List<ChatMessage>> {
         return db.chatMessages(chatId).map { dbChats ->
-           dbChats.map { it.toDomain() }
+            dbChats.map { it.toDomain() }
         }
     }
 
@@ -135,7 +141,7 @@ class ChatRepo(
     )
 }
 
-fun <K, V>Map<K, V>.withUpdated(key: K, value: (V?) -> V?): Map<K, V> {
+fun <K, V> Map<K, V>.withUpdated(key: K, value: (V?) -> V?): Map<K, V> {
     return toMutableMap().apply {
         val current = this[key]
         val new = value(current)

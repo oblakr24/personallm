@@ -4,13 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.launchMolecule
-import data.repo.Chat
 import data.repo.ChatMessage
 import data.repo.ChatRepo
 import di.VMContext
 import di.vmScope
 import feature.commonui.MessageDisplayData
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,23 +38,23 @@ class ChatComponent(
     private val chatId = MutableStateFlow(config.chatId)
     val text = MutableStateFlow("")
 
-    private val chats = chatId.flatMapLatest {
+    private val message = chatId.flatMapLatest {
         if (it == null) emptyFlow() else repo.flow(it)
     }
 
     val state: StateFlow<ChatContentUIState> by lazy {
         scope.launchMolecule(mode = RecompositionMode.Immediate) {
             ChatPresenter(
-                chatFlow = chats,
+                messageFlow = message,
             )
         }
     }
 
     @Composable
     private fun ChatPresenter(
-        chatFlow: Flow<List<ChatMessage>>,
+        messageFlow: Flow<List<ChatMessage>>,
     ): ChatContentUIState {
-        val repoMessages = chatFlow.collectAsState(initial = null).value
+        val repoMessages = messageFlow.collectAsState(initial = null).value
         val messages = repoMessages?.map {
             MessageDisplayData(
                 id = it.id,

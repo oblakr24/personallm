@@ -3,6 +3,7 @@ package db
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
+import di.Singleton
 import hockey.data.ChatEntity
 import hockey.data.ChatMessageEntity
 import hockey.data.ListingItem
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import me.tatarka.inject.annotations.Inject
 import personallm.db.Database
 
+@Singleton
 @Inject
 class AppDatabase(
     private val db: Database,
