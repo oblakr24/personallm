@@ -2,9 +2,6 @@ buildscript {
     repositories {
         mavenCentral()
     }
-    dependencies {
-        classpath(libs.molecule.gradle.plugin)
-    }
 }
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times

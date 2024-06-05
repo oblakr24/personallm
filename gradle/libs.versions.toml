@@ -23,6 +23,7 @@ essenty = "2.0.0"
 # Kotlin
 kotlin = "2.0.0"
 ksp = '2.0.0-1.0.21'
+molecule = "2.0.0"
 
 coroutines = "1.8.0"
 kotlinxDatetime = "0.6.0"
@@ -30,8 +31,6 @@ kotlinxSerializationJson = "1.7.0-RC"
 
 ktorfit = "1.14.0"
 ktor = "2.3.11"
-
-moleculeGradlePlugin = "1.4.2"
 
 sqldelight = "2.0.2"
 
@@ -85,8 +84,7 @@ ktorfit-ksp = { module = "de.jensklingenberg.ktorfit:ktorfit-ksp", version.ref =
 
 essenty-lifecycle-coroutines = { module = "com.arkivanov.essenty:lifecycle-coroutines", version.ref = "essenty" }
 
-molecule-gradle-plugin = { module = "app.cash.molecule:molecule-gradle-plugin", version.ref = "moleculeGradlePlugin" }
-molecule-runtime = { module = "app.cash.molecule:molecule-runtime", version.ref = "moleculeGradlePlugin" }
+molecule-runtime = { module = "app.cash.molecule:molecule-runtime", version.ref = "molecule" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
