@@ -28,6 +28,7 @@ import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Component
 import me.tatarka.inject.annotations.Provides
 import navigation.DefaultRootComponent
+import navigation.IntentHandler
 import navigation.RouteNavigator
 import personallm.db.Database
 import kotlin.coroutines.CoroutineContext
@@ -80,6 +81,12 @@ abstract class AppComponent {
     @Singleton
     fun db(): Database {
         return createDatabase(platformProviders.driverFactory())
+    }
+
+    @Provides
+    @Singleton
+    fun intentHandler(): IntentHandler {
+        return platformProviders.intentHandler()
     }
 
     @Provides

@@ -1,6 +1,11 @@
 package di
 
+import android.app.Activity
+import android.app.Application
+import android.app.Application.ActivityLifecycleCallbacks
 import android.content.Context
+import android.os.Bundle
+import androidx.constraintlayout.core.platform.WeakReference
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
@@ -12,9 +17,10 @@ import db.DriverFactory
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
+import navigation.IntentHandler
 import java.io.File
 
-actual class PlatformProviders(private val appContext: Context) {
+actual class PlatformProviders(private val appContext: Context, private val activityProvider: CurrentActivityProvider) {
 
     actual fun initialize() {
         Napier.base(DebugAntilog())
@@ -44,5 +50,36 @@ actual class PlatformProviders(private val appContext: Context) {
 
     actual fun datastoreFactory(): DatastorePrefsFactory {
         return prefsFactory
+    }
+
+    actual fun intentHandler(): IntentHandler {
+        return IntentHandler(activityProvider)
+    }
+}
+
+class CurrentActivityProvider(private var current: WeakReference<Activity>? = null) {
+
+    fun activity(): Activity? {
+        return current?.get()
+    }
+
+    val callback = object: ActivityLifecycleCallbacks {
+        override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+            current = WeakReference(activity)
+        }
+
+        override fun onActivityStarted(activity: Activity) = Unit
+
+        override fun onActivityResumed(activity: Activity) = Unit
+
+        override fun onActivityPaused(activity: Activity) = Unit
+
+        override fun onActivityStopped(activity: Activity) = Unit
+
+        override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
+
+        override fun onActivityDestroyed(activity: Activity) {
+            current = null
+        }
     }
 }

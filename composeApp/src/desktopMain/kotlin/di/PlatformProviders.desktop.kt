@@ -10,6 +10,7 @@ import db.DriverFactory
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
+import navigation.IntentHandler
 
 actual class PlatformProviders {
 
@@ -38,5 +39,9 @@ actual class PlatformProviders {
 
     actual fun datastoreFactory(): DatastorePrefsFactory {
         return prefsFactory
+    }
+
+    actual fun intentHandler(): IntentHandler {
+        return IntentHandler()
     }
 }

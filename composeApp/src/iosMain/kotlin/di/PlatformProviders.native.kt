@@ -10,6 +10,7 @@ import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.CoroutineScope
+import navigation.IntentHandler
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSURL
@@ -54,5 +55,7 @@ actual class PlatformProviders {
         return prefsFactory!!
     }
 
-
+    actual fun intentHandler(): IntentHandler {
+        return IntentHandler()
+    }
 }

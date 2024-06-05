@@ -2,6 +2,7 @@ package di
 
 import data.DatastorePrefsFactory
 import db.DriverFactory
+import navigation.IntentHandler
 
 expect class PlatformProviders {
 
@@ -10,4 +11,6 @@ expect class PlatformProviders {
     fun driverFactory(): DriverFactory
 
     fun datastoreFactory(): DatastorePrefsFactory
+
+    fun intentHandler(): IntentHandler
 }
