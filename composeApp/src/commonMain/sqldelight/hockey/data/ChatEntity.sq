@@ -1,4 +1,4 @@
-CREATE TABLE ChatEntity (
+CREATE TABLE IF NOT EXISTS ChatEntity (
     id TEXT NOT NULL PRIMARY KEY,
     version INTEGER NOT NULL,
     creationTimestamp INTEGER NOT NULL,

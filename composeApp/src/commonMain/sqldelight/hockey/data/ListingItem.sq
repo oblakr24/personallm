@@ -1,9 +1,9 @@
-CREATE TABLE listingItem (
+CREATE TABLE IF NOT EXISTS listingItem (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   text TEXT NOT NULL
 );
 
-CREATE INDEX listingItem_text ON listingItem(text);
+CREATE INDEX IF NOT EXISTS listingItem_text ON listingItem(text);
 
 -- INSERT INTO listingItem (id, text)
 -- VALUES ("1", 'Ryan Getzlaf');
