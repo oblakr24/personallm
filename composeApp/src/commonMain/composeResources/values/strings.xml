@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">My awesome app</string>
+    <string name="title">Some title</string>
+
+    <string name="test">Some title</string>
+
+    <string-array name="faq_items">
+        <item>How do you use this app?</item>
+        <item>1. ITEM1\n2. ITEM2\n3. ITEM3\n4. ITEM4</item>
+        <item>How do I setup my own API key?</item>
+        <item>Answer: TODO</item>
+        <item>Question: TODO</item>
+        <item>Answer: TODO</item>
+    </string-array>
+</resources>

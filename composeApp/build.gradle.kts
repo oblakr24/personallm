@@ -98,6 +98,8 @@ kotlin {
 
             implementation(libs.kotlinInject.runtime)
 
+            implementation(compose.components.resources)
+
             implementation("tech.annexflow.compose:constraintlayout-compose-multiplatform:0.3.1")
 
             val napier = "2.7.1"

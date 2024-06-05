@@ -22,7 +22,7 @@ class LandingComponent(
     fun onAction(action: LandingAction) {
         when (action) {
             LandingAction.OpenHome -> {
-                nav.navigation.push(DefaultRootComponent.Config.Home)
+                nav.navigation.push(DefaultRootComponent.Config.SampleRequest)
             }
 
             LandingAction.OpenImage -> {

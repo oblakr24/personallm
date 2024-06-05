@@ -13,6 +13,8 @@ import di.AppComponent
 import di.VMContext
 import feature.chat.ChatComponent
 import feature.chat.ChatScreen
+import feature.faq.FAQComponent
+import feature.faq.FAQScreen
 import feature.samplerequest.SampleRequestComponent
 import feature.image.ImageComponent
 import feature.image.ImageScreen
@@ -56,6 +58,11 @@ interface RootComponent: BackHandlerOwner {
         class Chat(val component: ChatComponent) : Child() {
             @Composable
             override fun Content() = ChatScreen(component)
+        }
+
+        class FAQ(val component: FAQComponent) : Child() {
+            @Composable
+            override fun Content() = FAQScreen(component)
         }
 
         @Composable
@@ -111,7 +118,7 @@ class DefaultRootComponent(
                 )
             }
 
-            Config.Home -> {
+            Config.SampleRequest -> {
                 RootComponent.Child.SampleRequest(
                     diComponent.sampleRequestComponent(VMContext.fromContext(componentContext))
                 )
@@ -134,6 +141,12 @@ class DefaultRootComponent(
                     diComponent.chatComponent(VMContext.fromContext(componentContext), config)
                 )
             }
+
+            is Config.FAQ -> {
+                RootComponent.Child.FAQ(
+                    diComponent.faqComponent(VMContext.fromContext(componentContext))
+                )
+            }
         }
 
     @Serializable
@@ -143,13 +156,16 @@ class DefaultRootComponent(
         data object Main : Config()
 
         @Serializable
-        data object Home : Config()
+        data object SampleRequest : Config()
 
         @Serializable
         data object Listing : Config()
 
         @Serializable
         data object Image : Config()
+
+        @Serializable
+        data object FAQ : Config()
 
         @Serializable
         data class Chat(val chatId: String?) : Config()

@@ -11,6 +11,7 @@ import db.createDatabase
 import de.jensklingenberg.ktorfit.Ktorfit
 import feature.chat.ChatComponent
 import feature.chats.ChatsComponent
+import feature.faq.FAQComponent
 import feature.samplerequest.SampleRequestComponent
 import feature.image.ImageComponent
 import feature.landing.LandingComponent
@@ -48,6 +49,7 @@ abstract class AppComponent {
     abstract val imageComponent: (context: VMContext) -> ImageComponent
     abstract val chatComponent: (context: VMContext, config: DefaultRootComponent.Config.Chat) -> ChatComponent
     abstract val chatsComponent: (context: VMContext) -> ChatsComponent
+    abstract val faqComponent: (context: VMContext) -> FAQComponent
 
     fun pageNavigation(componentContext: ComponentContext): PageNavigation {
         return MainPageNavigator(this, componentContext)
