@@ -82,7 +82,6 @@ kotlin {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.android.driver)
-            implementation(libs.accompanist.permissions)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -96,8 +95,6 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.material3)
             implementation(compose.components.uiToolingPreview)
-
-            implementation(libs.androidx.lifecycle.viewmodel)
 
             implementation(libs.kotlinInject.runtime)
 
@@ -183,7 +180,6 @@ android {
 
 dependencies {
     implementation(libs.androidx.ui.tooling.preview.desktop)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)// KSP will eventually have better multiplatform support and we'll be able to simply have
     // `ksp libs.kotlinInject.compiler` in the dependencies block of each source set
     // https://github.com/google/ksp/pull/1021
     with(libs.kotlinInject.compiler) {
