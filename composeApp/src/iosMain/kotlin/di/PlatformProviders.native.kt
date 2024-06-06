@@ -6,7 +6,6 @@ import androidx.datastore.preferences.core.Preferences
 import com.russhwolf.settings.NSUserDefaultsSettings
 import com.russhwolf.settings.Settings
 import data.DatastorePrefsFactory
-import data.SETTINGS_PREFERENCES
 import db.DriverFactory
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
@@ -36,7 +35,8 @@ actual class PlatformProviders {
         prefsFactory = object : DatastorePrefsFactory {
             override fun dataStorePreferences(
                 corruptionHandler: ReplaceFileCorruptionHandler<Preferences>?,
-                coroutineScope: CoroutineScope
+                coroutineScope: CoroutineScope,
+                name: String,
             ): DataStore<Preferences> {
                 return data.createDataStoreWithDefaults(
                     corruptionHandler = corruptionHandler,
@@ -49,7 +49,7 @@ actual class PlatformProviders {
                             create = false,
                             error = null,
                         )
-                        (requireNotNull(documentDirectory).path + "/$SETTINGS_PREFERENCES")
+                        (requireNotNull(documentDirectory).path + "/$name")
                     }
                 )
             }

@@ -1,19 +1,16 @@
 package di
 
 import android.app.Activity
-import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
 import android.content.Context
 import android.os.Bundle
 import androidx.constraintlayout.core.platform.WeakReference
 import androidx.datastore.core.DataStore
-import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.Preferences
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SharedPreferencesSettings
 import data.DatastorePrefsFactory
-import data.SETTINGS_PREFERENCES
 import data.createDataStoreWithDefaults
 import db.DriverFactory
 import io.github.aakira.napier.DebugAntilog
@@ -36,13 +33,14 @@ actual class PlatformProviders(private val appContext: Context, private val acti
         object : DatastorePrefsFactory {
             override fun dataStorePreferences(
                 corruptionHandler: ReplaceFileCorruptionHandler<Preferences>?,
-                coroutineScope: CoroutineScope
+                coroutineScope: CoroutineScope,
+                name: String,
             ): DataStore<Preferences> {
                 return createDataStoreWithDefaults(
                     corruptionHandler = corruptionHandler,
                     coroutineScope = coroutineScope,
                     path = {
-                        File(appContext.filesDir, "datastore/$SETTINGS_PREFERENCES").path
+                        File(appContext.filesDir, "datastore/$name").path
                     }
                 )
             }

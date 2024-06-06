@@ -5,7 +5,6 @@ import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import com.russhwolf.settings.PreferencesSettings
 import com.russhwolf.settings.Settings
 import data.DatastorePrefsFactory
-import data.SETTINGS_PREFERENCES
 import data.createDataStoreWithDefaults
 import db.DriverFactory
 import io.github.aakira.napier.DebugAntilog
@@ -27,12 +26,13 @@ actual class PlatformProviders {
         object : DatastorePrefsFactory {
             override fun dataStorePreferences(
                 corruptionHandler: ReplaceFileCorruptionHandler<androidx.datastore.preferences.core.Preferences>?,
-                coroutineScope: CoroutineScope
+                coroutineScope: CoroutineScope,
+                name: String,
             ): DataStore<androidx.datastore.preferences.core.Preferences> {
                 return createDataStoreWithDefaults(
                     corruptionHandler = corruptionHandler,
                     coroutineScope = coroutineScope,
-                    path = { SETTINGS_PREFERENCES }
+                    path = { "settings/$name" }
                 )
             }
         }

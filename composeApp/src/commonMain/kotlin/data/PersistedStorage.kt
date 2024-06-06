@@ -53,10 +53,9 @@ interface DatastorePrefsFactory {
     fun dataStorePreferences(
         corruptionHandler: ReplaceFileCorruptionHandler<Preferences>?,
         coroutineScope: CoroutineScope,
+        name: String,
     ): DataStore<Preferences>
 }
-
-internal const val SETTINGS_PREFERENCES = "settings_preferences.preferences_pb"
 
 internal fun createDataStoreWithDefaults(
     corruptionHandler: ReplaceFileCorruptionHandler<Preferences>? = null,
@@ -90,7 +89,7 @@ private class GenericPersistedStorage(
     val state: SharedFlow<String> =
         flow.filterNotNull().shareIn(scope, SharingStarted.WhileSubscribed(5000), replay = 1)
 
-    private val store = factory.dataStorePreferences(null, scope)
+    private val store = factory.dataStorePreferences(null, scope, name)
 
     suspend fun update(block: suspend String.() -> String) {
         ensurePopulated()
