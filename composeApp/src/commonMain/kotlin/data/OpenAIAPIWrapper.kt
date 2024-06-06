@@ -49,6 +49,30 @@ class OpenAIAPIWrapper(
         return streamCompletions(body)
     }
 
+    suspend fun getChatSummary(
+        prevMessages: List<ChatCompletionsRequestBody.Message>
+    ): NetworkResponse<String> {
+        val body = ChatCompletionsRequestBody(
+            messages = prevMessages + listOf(
+                ChatCompletionsRequestBody.Message(
+                    role = ROLE_USER,
+                    content = listOf(
+                        ChatCompletionsRequestBody.MessageItem(
+                            text = "Summarize this conversations in 2-5 words maximum. Only include this summary in your response. Do not include any other messages.",
+                        )
+                    ),
+                )
+            ),
+            stream = false,
+        )
+        return api.getChatCompletions(
+            bearerToken = bearerTokenHeader(),
+            body = body,
+        ).map {
+            it.choices.firstOrNull()?.message?.content.orEmpty()
+        }
+    }
+
     suspend fun getImageCompletions(
         prompt: String,
         imageEncoded: String
@@ -74,9 +98,11 @@ class OpenAIAPIWrapper(
         return streamCompletions(body)
     }
 
+    private fun bearerTokenHeader() = OpenAIAPI.BEARER_TOKEN_PREFIX + " ${secretsProvider.openAIApiKey()}"
+
     private suspend fun streamCompletions(body: ChatCompletionsRequestBody): Flow<NetworkResponse<WrappedCompletionResponse>> =
         api.getChatCompletionsStreaming(
-            bearerToken = OpenAIAPI.BEARER_TOKEN_PREFIX + " ${secretsProvider.openAIApiKey()}",
+            bearerToken = bearerTokenHeader(),
             body = body,
         ).toStreamingFlow().parseToResponse().map { resp ->
             resp.map {

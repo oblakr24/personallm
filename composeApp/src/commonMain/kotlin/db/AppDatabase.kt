@@ -52,6 +52,13 @@ class AppDatabase(
         )
     }
 
+    suspend fun updateChatSummary(id: String, summary: String) {
+        db.chatEntityQueries.updateChatSummaryById(
+            summary = summary,
+            id = id,
+        )
+    }
+
     suspend fun findChatById(id: String): ChatEntity? {
         return db.chatEntityQueries.selectChatById(id).asFlow()
             .mapToOneOrNull(scope.coroutineContext).firstOrNull()

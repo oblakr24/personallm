@@ -22,3 +22,9 @@ WHERE id = ?;
 insertOrReplaceChat:
 INSERT OR REPLACE INTO ChatEntity (id, version, creationTimestamp, lastMessageTimestamp, summary)
 VALUES (?, ?, ?, ?, ?);
+
+-- Update the summary of a chat by ID
+updateChatSummaryById:
+UPDATE ChatEntity
+SET summary = ?
+WHERE id = ?;

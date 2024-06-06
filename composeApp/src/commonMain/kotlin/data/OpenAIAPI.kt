@@ -7,6 +7,7 @@ import de.jensklingenberg.ktorfit.http.POST
 import de.jensklingenberg.ktorfit.http.Streaming
 import io.ktor.client.statement.HttpStatement
 import kotlinx.serialization.Serializable
+import util.OpResult
 
 
 interface OpenAIAPI {
@@ -16,7 +17,7 @@ interface OpenAIAPI {
     suspend fun getChatCompletions(
         @Header("Authorization") bearerToken: String,
         @Body body: ChatCompletionsRequestBody
-    ): NetworkResponse<ChatCompletionResponse>
+    ): OpResult<ChatCompletionResponse, NetworkError>
 
     @Headers("Content-Type: application/json")
     @POST("v1/chat/completions")

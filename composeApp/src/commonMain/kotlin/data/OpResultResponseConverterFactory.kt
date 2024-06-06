@@ -1,7 +1,5 @@
 package data
 
-import util.OpResult
-import util.RootError
 import de.jensklingenberg.ktorfit.Ktorfit
 import de.jensklingenberg.ktorfit.converter.Converter
 import de.jensklingenberg.ktorfit.converter.KtorfitResult
@@ -10,7 +8,7 @@ import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.isSuccess
-
+import util.OpResult
 
 class OpResultResponseConverterFactory : Converter.Factory {
 

@@ -40,8 +40,7 @@ class ChatRepo(
             lastMessage = null,
             createdAt = Clock.System.now(),
             lastMessageAt = Clock.System.now(),
-            // TODO: Summary
-            summary = "New Chat"
+            summary = ""
         ).also { curr ->
             scope.launch {
                 db.insertChat(curr.toEntity())
@@ -81,6 +80,7 @@ class ChatRepo(
                     db.insertChatMessage(msg.toEntity(current.id))
                 }
             }
+            updateSummary(chatId = current.id, prompt = prompt, prevMessages = prevMsgs)
         }
         return current.id
     }
@@ -95,6 +95,24 @@ class ChatRepo(
         return db.chats().map { entities ->
             entities.map {
                 it.toChat()
+            }
+        }
+    }
+
+    private fun updateSummary(chatId: String, prompt: String, prevMessages: List<ChatCompletionsRequestBody.Message>) {
+        // TODO: logic to update it more often?
+        if (prevMessages.isNotEmpty()) return
+        val msgs = listOf(
+            ChatCompletionsRequestBody.Message(
+                role = ROLE_USER,
+                content = listOf(ChatCompletionsRequestBody.MessageItem(text = prompt))
+            )
+        )
+        scope.launch {
+            api.getChatSummary(msgs).doOnError {
+                signaling.handleGenericError(it)
+            }.doOnSuccessSusp { summary ->
+                db.updateChatSummary(id = chatId, summary = summary)
             }
         }
     }
