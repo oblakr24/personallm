@@ -7,7 +7,6 @@ import app.cash.molecule.launchMolecule
 import db.AppDatabase
 import di.VMContext
 import di.vmScope
-import hockey.data.ListingItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +15,7 @@ import kotlinx.coroutines.launch
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import navigation.RouteNavigator
+import personallm.data.ListingItem
 import kotlin.coroutines.CoroutineContext
 
 @Inject

@@ -6,26 +6,19 @@ import data.ChatCompletionsRequestBody.MessageItem.Companion.ROLE_USER
 import data.OpenAIAPIWrapper
 import db.AppDatabase
 import di.Singleton
-import hockey.data.ChatEntity
-import hockey.data.ChatMessageEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import me.tatarka.inject.annotations.Inject
+import personallm.data.ChatEntity
+import personallm.data.ChatMessageEntity
 import util.randomUUID
-import kotlin.math.sign
 
 @Singleton
 @Inject

@@ -3,6 +3,8 @@ package di
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.Preferences
+import com.russhwolf.settings.NSUserDefaultsSettings
+import com.russhwolf.settings.Settings
 import data.DatastorePrefsFactory
 import data.SETTINGS_PREFERENCES
 import db.DriverFactory
@@ -57,5 +59,9 @@ actual class PlatformProviders {
 
     actual fun intentHandler(): IntentHandler {
         return IntentHandler()
+    }
+
+    actual fun settingsFactory(): Settings.Factory {
+        return NSUserDefaultsSettings.Factory()
     }
 }

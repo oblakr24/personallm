@@ -29,7 +29,7 @@ fun NavigationButton(
     rightContent: @Composable BoxScope.() -> Unit = {
         Icon(
             imageVector = Icons.Filled.ChevronRight,
-            tint = Color.Unspecified,
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
             contentDescription = "Go"
         )
     },
@@ -41,12 +41,13 @@ fun NavigationButton(
         contentPadding = PaddingValues(horizontal = 24.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent,
-            contentColor = AppColors.PrimaryGreen,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         ),
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.weight(1f)
         )
 

@@ -6,8 +6,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +20,7 @@ import com.arkivanov.decompose.extensions.compose.stack.animation.StackAnimation
 import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.backhandler.BackHandler
 import com.arkivanov.essenty.lifecycle.Lifecycle
+import data.DarkModeState
 import feature.commonui.AppSnackBar
 import kotlinx.coroutines.flow.collectLatest
 import navigation.RootComponent
@@ -28,10 +31,11 @@ import util.AppSnackbarVisuals
 @Composable
 @Preview
 fun App(root: RootComponent) {
-    AppTheme {
-        val snackBarHostState = remember { SnackbarHostState() }
+    val component = root.mainAppComponent
+    val darkModeEnabled = component.darkModeEnabled.collectAsState().value
 
-        val component = root.mainAppComponent
+    AppTheme(overrideDarkMode = darkModeEnabled == DarkModeState.ON) {
+        val snackBarHostState = remember { SnackbarHostState() }
         Scaffold(
             snackbarHost = {
                 Box(
@@ -76,8 +80,6 @@ fun App(root: RootComponent) {
                     child.instance.Content()
                 }
             }
-
-
         }
 
         LaunchedEffect(key1 = component, block = {
@@ -86,20 +88,6 @@ fun App(root: RootComponent) {
             }
         })
     }
-}
-
-fun createBackDispatcher(): BackDispatcher = BackDispatcher()
-
-fun customDefaultComponentContext(
-    backDispatcher: BackDispatcher,
-    lifecycle: Lifecycle
-): DefaultComponentContext {
-    return DefaultComponentContext(
-        lifecycle = lifecycle,
-        stateKeeper = null,
-        instanceKeeper = null,
-        backHandler = backDispatcher,
-    )
 }
 
 private suspend fun showSnackbar(

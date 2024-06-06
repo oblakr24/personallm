@@ -100,6 +100,9 @@ kotlin {
 
             implementation(compose.components.resources)
 
+            implementation("com.russhwolf:multiplatform-settings:1.1.1")
+            implementation("com.russhwolf:multiplatform-settings-coroutines:1.1.1")
+
             implementation("tech.annexflow.compose:constraintlayout-compose-multiplatform:0.3.1")
 
             val napier = "2.7.1"

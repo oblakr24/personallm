@@ -2,9 +2,11 @@ package feature.samplerequest
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -35,13 +37,13 @@ fun SampleRequestContent(state: SampleRequestUIState, onAction: (SampleRequestAc
 
             if (state.loading) {
                 item {
-                    Text("Loading...")
+                    Text("Loading...", modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.primary)
                 }
             }
 
             if (state.response != null) {
                 item {
-                    Text(state.response)
+                    Text(state.response, modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.primary)
                 }
             }
         }

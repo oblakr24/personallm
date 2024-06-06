@@ -66,6 +66,9 @@ class ChatsComponent(
             is ChatsAction.ChatClicked -> {
                 nav.navigation.push(DefaultRootComponent.Config.Chat(chatId = action.id))
             }
+            is ChatsAction.NewChatClicked -> {
+                nav.navigation.push(DefaultRootComponent.Config.Chat(chatId = null))
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ import androidx.compose.ui.window.rememberWindowState
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import data.AppStorage
 import di.AppComponent
 import di.PlatformProviders
 import di.create
@@ -11,12 +12,13 @@ import navigation.DefaultRootComponent
 import javax.swing.SwingUtilities
 
 fun main() {
-
+    val platformProviders = PlatformProviders()
+    val appStorage = AppStorage(platformProviders.settingsFactory())
     val appComponent = AppComponent::class.create().apply {
-        platformProviders = PlatformProviders()
+        this.platformProviders = platformProviders
+        this.appStorage = appStorage
     }
     val lifecycle = LifecycleRegistry()
-    // Always create the root component outside Compose on the UI thread
     val root =
         runOnUiThread {
             DefaultRootComponent(

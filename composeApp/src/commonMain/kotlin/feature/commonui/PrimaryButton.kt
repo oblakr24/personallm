@@ -34,8 +34,8 @@ fun PrimaryButton(
         modifier = modifier.height(56.dp),
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
-            containerColor = AppColors.PrimaryGreen,
-            contentColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
             disabledContainerColor = AppColors.DisabledGrayBackground,
             disabledContentColor = AppColors.DisabledGray,
         ),
@@ -45,7 +45,7 @@ fun PrimaryButton(
         if (loading) {
             LoadingSpinner(trackColor = if (enabled) AppColors.FadedGreen else AppColors.Gray400)
         } else {
-            Text(text = text, style = MaterialTheme.typography.labelLarge)
+            Text(text = text, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
         }
     }
 }

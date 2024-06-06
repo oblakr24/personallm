@@ -4,9 +4,6 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import di.Singleton
-import hockey.data.ChatEntity
-import hockey.data.ChatMessageEntity
-import hockey.data.ListingItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -14,6 +11,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import me.tatarka.inject.annotations.Inject
+import personallm.data.ChatEntity
+import personallm.data.ChatMessageEntity
+import personallm.data.ListingItem
+import personallm.data.TemplateEntity
 import personallm.db.Database
 
 @Singleton
@@ -37,6 +38,10 @@ class AppDatabase(
         return db.chatEntityQueries.selectAllChats().asFlow().mapToList(scope.coroutineContext)
     }
 
+    fun templates(): Flow<List<TemplateEntity>> {
+        return db.templateEntityQueries.selectAllTemplates().asFlow().mapToList(scope.coroutineContext)
+    }
+
     suspend fun insertChat(entity: ChatEntity) {
         db.chatEntityQueries.insertOrReplaceChat(
             id = entity.id,
@@ -58,5 +63,9 @@ class AppDatabase(
 
     suspend fun insertListingItem(itemText: String) {
         db.listingItemQueries.insert(text = itemText)
+    }
+
+    suspend fun insertTemplate(entity: TemplateEntity) {
+        db.templateEntityQueries.inserFullTemplate(entity)
     }
 }

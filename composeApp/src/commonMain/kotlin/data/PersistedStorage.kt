@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
@@ -77,7 +78,7 @@ private class GenericPersistedStorage(
     private val defaultData: () -> String
 ) {
 
-    val scope = CoroutineScope(Dispatchers.Main + Job())
+    val scope = CoroutineScope(Dispatchers.IO + Job())
 
     private val flow = flow {
         ensurePopulated()

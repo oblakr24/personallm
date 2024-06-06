@@ -39,7 +39,10 @@ fun ChatContent(
                 key = { state.messages[it].id },
                 itemContent = { idx ->
                     val item = state.messages[idx]
-                    MessageDisplay(modifier = Modifier.fillMaxWidth(), data = item)
+                    MessageDisplay(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                        data = item
+                    )
                 })
         }
     }, footer = {

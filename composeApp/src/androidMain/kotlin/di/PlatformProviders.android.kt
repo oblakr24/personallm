@@ -10,6 +10,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.Preferences
+import com.russhwolf.settings.Settings
+import com.russhwolf.settings.SharedPreferencesSettings
 import data.DatastorePrefsFactory
 import data.SETTINGS_PREFERENCES
 import data.createDataStoreWithDefaults
@@ -54,6 +56,10 @@ actual class PlatformProviders(private val appContext: Context, private val acti
 
     actual fun intentHandler(): IntentHandler {
         return IntentHandler(activityProvider)
+    }
+
+    actual fun settingsFactory(): Settings.Factory {
+        return SharedPreferencesSettings.Factory(appContext)
     }
 }
 

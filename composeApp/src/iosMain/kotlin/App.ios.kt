@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
+import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.stack.animation.StackAnimator
 import com.arkivanov.decompose.extensions.compose.stack.animation.isFront
@@ -13,7 +14,22 @@ import com.arkivanov.decompose.extensions.compose.stack.animation.predictiveback
 import com.arkivanov.decompose.extensions.compose.stack.animation.predictiveback.predictiveBackAnimation
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimator
+import com.arkivanov.essenty.backhandler.BackDispatcher
+import com.arkivanov.essenty.lifecycle.Lifecycle
 
+fun createBackDispatcher(): BackDispatcher = BackDispatcher()
+
+fun customDefaultComponentContext(
+    backDispatcher: BackDispatcher,
+    lifecycle: Lifecycle
+): DefaultComponentContext {
+    return DefaultComponentContext(
+        lifecycle = lifecycle,
+        stateKeeper = null,
+        instanceKeeper = null,
+        backHandler = backDispatcher,
+    )
+}
 
 @OptIn(ExperimentalDecomposeApi::class)
 actual fun <C : Any, T : Any> backAnimation(

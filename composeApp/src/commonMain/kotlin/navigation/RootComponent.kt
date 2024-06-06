@@ -70,14 +70,6 @@ interface RootComponent: BackHandlerOwner {
     }
 }
 
-interface RouteNavigator {
-    fun navigateUp() {
-        navigation.pop()
-    }
-
-    val navigation: StackNavigation<DefaultRootComponent.Config>
-}
-
 class DefaultRootComponent(
     componentContext: ComponentContext,
     private val diComponent: AppComponent,

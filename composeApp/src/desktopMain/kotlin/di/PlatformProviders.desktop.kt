@@ -2,7 +2,8 @@ package di
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
-import androidx.datastore.preferences.core.Preferences
+import com.russhwolf.settings.PreferencesSettings
+import com.russhwolf.settings.Settings
 import data.DatastorePrefsFactory
 import data.SETTINGS_PREFERENCES
 import data.createDataStoreWithDefaults
@@ -25,9 +26,9 @@ actual class PlatformProviders {
     private val prefsFactory by lazy {
         object : DatastorePrefsFactory {
             override fun dataStorePreferences(
-                corruptionHandler: ReplaceFileCorruptionHandler<Preferences>?,
+                corruptionHandler: ReplaceFileCorruptionHandler<androidx.datastore.preferences.core.Preferences>?,
                 coroutineScope: CoroutineScope
-            ): DataStore<Preferences> {
+            ): DataStore<androidx.datastore.preferences.core.Preferences> {
                 return createDataStoreWithDefaults(
                     corruptionHandler = corruptionHandler,
                     coroutineScope = coroutineScope,
@@ -43,5 +44,9 @@ actual class PlatformProviders {
 
     actual fun intentHandler(): IntentHandler {
         return IntentHandler()
+    }
+
+    actual fun settingsFactory(): Settings.Factory {
+        return PreferencesSettings.Factory()
     }
 }

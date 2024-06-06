@@ -17,11 +17,16 @@ class AppDelegate: NSObject, UIApplicationDelegate {
        var backDispatcher: BackDispatcher!
 
        override init() {
-           diComponent.platformProviders = PlatformProviders()
+           let platformProviders = PlatformProviders()
+           diComponent.platformProviders = platformProviders
+           
+           let appStorage = AppStorage(factory: platformProviders.settingsFactory())
+           diComponent.appStorage = appStorage
+           
            super.init()
-           backDispatcher = AppKt.createBackDispatcher()
+           backDispatcher = App_iosKt.createBackDispatcher()
 
-           let componentContext = AppKt.customDefaultComponentContext(backDispatcher: backDispatcher, lifecycle: ApplicationLifecycle())
+           let componentContext = App_iosKt.customDefaultComponentContext(backDispatcher: backDispatcher, lifecycle: ApplicationLifecycle())
 
            root = DefaultRootComponent(
                componentContext: componentContext,

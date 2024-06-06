@@ -32,7 +32,6 @@ data class ListingContentUIState(
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ListingContent(
     state: ListingContentUIState,
@@ -43,7 +42,6 @@ fun ListingContent(
     TitledScaffold("Listing", onBackClicked = onBackClicked, content = {
         val lazyListState = rememberLazyListState()
         LazyColumn(state = lazyListState, modifier = Modifier.verticalScrollbar(lazyListState)) {
-
             item {
                 Spacer(modifier = Modifier.height(12.dp))
             }

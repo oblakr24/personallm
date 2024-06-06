@@ -3,6 +3,7 @@ package di
 import MainAppComponent
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.StackNavigation
+import data.AppStorage
 import data.OpResultResponseConverterFactory
 import data.OpenAIAPI
 import data.StorageProvider
@@ -12,13 +13,14 @@ import de.jensklingenberg.ktorfit.Ktorfit
 import feature.chat.ChatComponent
 import feature.chats.ChatsComponent
 import feature.faq.FAQComponent
-import feature.samplerequest.SampleRequestComponent
 import feature.image.ImageComponent
 import feature.landing.LandingComponent
 import feature.listing.ListingComponent
 import feature.main.MainComponent
 import feature.main.MainPageNavigator
 import feature.main.PageNavigation
+import feature.samplerequest.SampleRequestComponent
+import feature.templates.TemplatesComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -41,6 +43,8 @@ abstract class AppComponent {
     lateinit var navigation: StackNavigation<DefaultRootComponent.Config>
     lateinit var platformProviders: PlatformProviders
 
+    lateinit var appStorage: AppStorage
+
     // Components
     abstract val mainAppComponent: MainAppComponent
     abstract val mainComponent: (pageNavigator: PageNavigation, context: VMContext) -> MainComponent
@@ -50,6 +54,7 @@ abstract class AppComponent {
     abstract val imageComponent: (context: VMContext) -> ImageComponent
     abstract val chatComponent: (context: VMContext, config: DefaultRootComponent.Config.Chat) -> ChatComponent
     abstract val chatsComponent: (context: VMContext) -> ChatsComponent
+    abstract val templatesComponent: (context: VMContext) -> TemplatesComponent
     abstract val faqComponent: (context: VMContext) -> FAQComponent
 
     fun pageNavigation(componentContext: ComponentContext): PageNavigation {
@@ -87,6 +92,12 @@ abstract class AppComponent {
     @Singleton
     fun intentHandler(): IntentHandler {
         return platformProviders.intentHandler()
+    }
+
+    @Provides
+    @Singleton
+    fun appStorage(): AppStorage {
+        return appStorage
     }
 
     @Provides

@@ -1,0 +1,29 @@
+CREATE TABLE IF NOT EXISTS TemplateEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    version INTEGER NOT NULL,
+    creationTimestamp INTEGER NOT NULL,
+    updateTimestamp INTEGER,
+    title TEXT NOT NULL,
+    prompt TEXT NOT NULL
+);
+
+-- Queries
+-- Select all templates
+selectAllTemplates:
+SELECT *
+FROM TemplateEntity;
+
+-- Select a template by ID
+selectTemplateById:
+SELECT *
+FROM TemplateEntity
+WHERE id = ?;
+
+-- Upsert a template
+insertOrReplaceTemplate:
+INSERT OR REPLACE INTO TemplateEntity (id, version, creationTimestamp, updateTimestamp, title, prompt)
+VALUES (?, ?, ?, ?, ?, ?);
+
+inserFullTemplate:
+INSERT OR REPLACE INTO TemplateEntity (id, version, creationTimestamp, updateTimestamp, title, prompt)
+VALUES ?;
