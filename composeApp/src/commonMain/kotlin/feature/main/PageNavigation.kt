@@ -17,6 +17,8 @@ import feature.chats.ChatsComponent
 import feature.chats.ChatsScreen
 import feature.landing.LandingComponent
 import feature.landing.LandingScreen
+import feature.templates.TemplatesComponent
+import feature.templates.TemplatesScreen
 import kotlinx.serialization.Serializable
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
@@ -41,6 +43,11 @@ sealed class PageComponent {
         override fun Content() = ChatsScreen(component)
     }
 
+    class Templates(val component: TemplatesComponent) : PageComponent() {
+        @Composable
+        override fun Content() = TemplatesScreen(component)
+    }
+
     @Composable
     abstract fun Content()
 }
@@ -54,6 +61,9 @@ sealed class PageConfig {
 
     @Serializable
     data object Chats : PageConfig()
+
+    @Serializable
+    data object Templates : PageConfig()
 }
 
 @OptIn(ExperimentalDecomposeApi::class)
@@ -70,7 +80,7 @@ class MainPageNavigator(
             serializer = PageConfig.serializer(),
             initialPages = {
                 Pages(
-                    items = listOf(PageConfig.Landing, PageConfig.Chats),
+                    items = listOf(PageConfig.Landing, PageConfig.Chats, PageConfig.Templates),
                     selectedIndex = 0,
                 )
             },
@@ -81,6 +91,10 @@ class MainPageNavigator(
                 )
                 PageConfig.Chats -> PageComponent.Chats(
                     diComponent.chatsComponent(VMContext.fromContext(childComponentContext))
+                )
+
+                PageConfig.Templates -> PageComponent.Templates(
+                    diComponent.templatesComponent(VMContext.fromContext(childComponentContext))
                 )
             }
         }
