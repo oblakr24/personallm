@@ -34,6 +34,7 @@ fun TitledScaffold(
     content: @Composable ColumnScope.() -> Unit,
     footer: (@Composable () -> Unit)? = null,
     leadingIcon: (@Composable () -> Unit)? = null,
+    titleContent: (@Composable () -> Unit)? = null,
     hideShadows: Boolean = false,
 ) {
     Scaffold(
@@ -49,6 +50,9 @@ fun TitledScaffold(
                                 style = AppTypography.Body2SemiBold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
+                        }
+                        if (titleContent != null) {
+                            titleContent()
                         }
                     },
                     navigationIcon = {

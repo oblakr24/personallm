@@ -20,8 +20,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
@@ -35,6 +39,8 @@ fun InputBar(
     onChange: (String) -> Unit,
 ) {
     val bgColor = MaterialTheme.colorScheme.primaryContainer
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -49,7 +55,6 @@ fun InputBar(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            val keyboardController = LocalSoftwareKeyboardController.current
             Spacer(modifier = Modifier.width(12.dp))
             TextField(
                 value = input,
@@ -71,6 +76,7 @@ fun InputBar(
                 modifier = Modifier
                     .weight(1f)
                     .background(bgColor)
+                    .focusRequester(focusRequester)
             )
 
             if (input.isNotBlank()) {
@@ -88,6 +94,10 @@ fun InputBar(
                 }
             }
         }
+    }
+    LaunchedEffect(key1 = Unit) {
+        focusRequester.requestFocus()
+        keyboardController?.show()
     }
 }
 
