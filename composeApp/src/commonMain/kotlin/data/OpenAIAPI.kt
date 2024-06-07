@@ -75,7 +75,7 @@ data class ChatCompletionResponse(
 @Serializable
 data class ChatCompletionsRequestBody(
     val messages: List<Message>,
-    val model: String = OpenAIAPIWrapper.Model.V3.value,
+    val model: String,
     val stream: Boolean,
     val temperature: Float = 0.7f,
 ) {

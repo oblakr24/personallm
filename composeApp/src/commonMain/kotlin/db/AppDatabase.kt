@@ -1,5 +1,6 @@
 package db
 
+import app.cash.sqldelight.Query
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
@@ -9,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import me.tatarka.inject.annotations.Inject
 import personallm.data.ChatEntity
@@ -57,6 +59,10 @@ class AppDatabase(
             summary = summary,
             id = id,
         )
+    }
+
+    fun chatById(id: String): Flow<ChatEntity> {
+        return db.chatEntityQueries.selectChatById(id).asFlow().mapToOneOrNull(scope.coroutineContext).filterNotNull()
     }
 
     suspend fun findChatById(id: String): ChatEntity? {

@@ -29,7 +29,7 @@ class ChatRepo(
 ) {
     private val scope = CoroutineScope(Dispatchers.Main + Job())
 
-    suspend fun submitNew(orgChatId: String?, prompt: String): String {
+    suspend fun submitNew(orgChatId: String?, prompt: String, model: OpenAIAPIWrapper.Model): String {
         val current = orgChatId?.let { id ->
             val messages = db.chatMessages(id).firstOrNull().orEmpty()
             val chat = db.findChatById(id)?.toChat()!!
@@ -66,7 +66,7 @@ class ChatRepo(
                     content = listOf(ChatCompletionsRequestBody.MessageItem(text = it.content))
                 )
             }
-            api.getChatCompletions(prompt = prompt, prevMessages = prevMsgs).collect { resp ->
+            api.getChatCompletions(prompt = prompt, prevMessages = prevMsgs, model = model).collect { resp ->
                 resp.doOnError {
                     signaling.handleGenericError(it)
                 }.doOnSuccessSusp {
@@ -88,6 +88,12 @@ class ChatRepo(
     fun flow(chatId: String): Flow<List<ChatMessage>> {
         return db.chatMessages(chatId).map { dbChats ->
             dbChats.map { it.toDomain() }
+        }
+    }
+
+    fun chatById(chatId: String): Flow<Chat> {
+        return db.chatById(chatId).map {
+            it.toChat()
         }
     }
 

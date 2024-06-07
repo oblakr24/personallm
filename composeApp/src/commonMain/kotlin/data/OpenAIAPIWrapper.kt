@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.runningFold
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
 import util.OpResult
+import util.capitalized
 
 @Singleton
 @Inject
@@ -26,14 +27,18 @@ class OpenAIAPIWrapper(
     enum class Model(val value: String) {
         V3("gpt-3.5-turbo"),
         V4("gpt-4.0-turbo"),
-        V4_VISION_PREVIEW("gpt-4-vision-preview")
+        V4_VISION_PREVIEW("gpt-4-vision-preview");
+
+        fun displayName() = value.split("_").joinToString(separator = " ") { it.capitalized() }
     }
 
     suspend fun getChatCompletions(
         prompt: String,
-        prevMessages: List<ChatCompletionsRequestBody.Message> = emptyList()
+        prevMessages: List<ChatCompletionsRequestBody.Message> = emptyList(),
+        model: Model,
     ): Flow<NetworkResponse<WrappedCompletionResponse>> {
         val body = ChatCompletionsRequestBody(
+            model = model.value,
             messages = prevMessages + listOf(
                 ChatCompletionsRequestBody.Message(
                     role = ROLE_USER,
@@ -50,9 +55,11 @@ class OpenAIAPIWrapper(
     }
 
     suspend fun getChatSummary(
-        prevMessages: List<ChatCompletionsRequestBody.Message>
+        prevMessages: List<ChatCompletionsRequestBody.Message>,
+        model: Model = Model.V3,
     ): NetworkResponse<String> {
         val body = ChatCompletionsRequestBody(
+            model = model.value,
             messages = prevMessages + listOf(
                 ChatCompletionsRequestBody.Message(
                     role = ROLE_USER,
@@ -75,10 +82,11 @@ class OpenAIAPIWrapper(
 
     suspend fun getImageCompletions(
         prompt: String,
-        imageEncoded: String
+        imageEncoded: String,
+        model: Model = Model.V4_VISION_PREVIEW,
     ): Flow<NetworkResponse<WrappedCompletionResponse>> {
         val body = ChatCompletionsRequestBody(
-            model = Model.V4_VISION_PREVIEW.value,
+            model = model.value,
             messages = listOf(
                 ChatCompletionsRequestBody.Message(
                     role = "user",
