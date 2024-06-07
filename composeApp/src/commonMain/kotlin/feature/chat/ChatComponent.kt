@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.launchMolecule
+import data.OpenAIAPIWrapper
 import data.repo.ChatMessage
 import data.repo.ChatRepo
 import di.VMContext
@@ -15,6 +16,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
@@ -38,14 +41,22 @@ class ChatComponent(
     private val chatId = MutableStateFlow(config.chatId)
     val text = MutableStateFlow("")
 
-    private val message = chatId.flatMapLatest {
-        if (it == null) emptyFlow() else repo.flow(it)
+    private val selectedModel = MutableStateFlow<OpenAIAPIWrapper.Model>(OpenAIAPIWrapper.Model.V3)
+
+    private val message = chatId.flatMapLatest { id ->
+        if (id == null) emptyFlow() else repo.flow(id)
+    }
+
+    private val title = chatId.flatMapLatest { id ->
+        if (id == null) emptyFlow() else repo.chatById(id).mapNotNull { c -> c.summary.takeIf { it.isNotBlank() } }
     }
 
     val state: StateFlow<ChatContentUIState> by lazy {
         scope.launchMolecule(mode = RecompositionMode.Immediate) {
             ChatPresenter(
                 messageFlow = message,
+                selectedModelFlow = selectedModel,
+                titleFlow = title,
             )
         }
     }
@@ -53,8 +64,12 @@ class ChatComponent(
     @Composable
     private fun ChatPresenter(
         messageFlow: Flow<List<ChatMessage>>,
+        selectedModelFlow: StateFlow<OpenAIAPIWrapper.Model>,
+        titleFlow: Flow<String>,
     ): ChatContentUIState {
         val repoMessages = messageFlow.collectAsState(initial = null).value
+        val selectedModel = selectedModelFlow.collectAsState().value
+        val title = titleFlow.collectAsState(null).value ?: "New Chat"
         val messages = repoMessages?.map {
             MessageDisplayData(
                 id = it.id,
@@ -65,8 +80,18 @@ class ChatComponent(
                 imageUri = null,
             )
         }.orEmpty()
+        val models = OpenAIAPIWrapper.Model.entries.map {
+            ChatContentUIState.ModelDisplay(
+                value = it.value,
+                name = it.displayName(),
+                selected = it == selectedModel,
+            )
+        }
         return ChatContentUIState(
             messages = messages,
+            models = models,
+            selectedModel = selectedModel.displayName(),
+            title = title,
         )
     }
 
@@ -75,14 +100,19 @@ class ChatComponent(
             ChatAction.SendClicked -> {
                 val prompt = text.value
                 text.value = ""
+                val model = selectedModel.value
                 val existingChatId = chatId.value
                 scope.launch {
-                    val newChatId = repo.submitNew(existingChatId, prompt = prompt)
+                    val newChatId = repo.submitNew(existingChatId, prompt = prompt, model = model)
                     chatId.value = newChatId
                 }
             }
             is ChatAction.TextChanged -> {
                 text.value = action.new
+            }
+
+            is ChatAction.ModelSelected -> {
+                selectedModel.value = OpenAIAPIWrapper.Model.entries.first { it.value == action.display.value }
             }
         }
     }

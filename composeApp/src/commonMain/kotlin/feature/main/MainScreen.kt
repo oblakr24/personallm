@@ -20,6 +20,9 @@ import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -106,9 +109,9 @@ fun MainScreen(component: MainComponent) {
 }
 
 enum class BottomNavItem(val icon: ImageVector, val label: String) {
-    Landing(Icons.Default.Home, "Landing"),
-    Chats(Icons.Default.ChatBubbleOutline, "Chats"),
-    Templates(Icons.Default.Settings, "Templates"),
+    Landing(Icons.Outlined.Home, "Landing"),
+    Chats(Icons.Outlined.ChatBubbleOutline, "Chats"),
+    Templates(Icons.Outlined.Settings, "Templates"),
 }
 
 @Composable
