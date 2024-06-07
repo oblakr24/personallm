@@ -12,9 +12,7 @@ import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.format.Padding
 import kotlinx.datetime.format.byUnicodePattern
 import kotlinx.datetime.format.char
-import kotlinx.datetime.format.optional
 import kotlinx.datetime.toLocalDateTime
-import kotlin.math.sin
 
 fun Instant.formatted(format: DateTimeFormat<LocalDateTime>) = formatInstant(this, format)
 fun Instant.formattedReadable() = formatInstant(this, DateFormats.readable)
