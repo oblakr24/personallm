@@ -19,6 +19,7 @@ import me.tatarka.inject.annotations.Inject
 import navigation.DefaultRootComponent
 import navigation.RouteNavigator
 import util.formatted
+import util.formattedReadable
 import kotlin.coroutines.CoroutineContext
 
 @Inject
@@ -52,8 +53,8 @@ class ChatsComponent(
             ChatDisplayData(
                 id = it.id,
                 title = buildAnnotatedString { append(it.summary) },
-                subtitle = buildAnnotatedString { append("Last updated ${it.lastMessageAt.formatted()}") },
-                date = "Created ${it.createdAt.formatted()}",
+                subtitle = buildAnnotatedString { append("Last updated ${it.lastMessageAt.formattedReadable()}") },
+                date = "Created ${it.createdAt.formattedReadable()}",
             )
         }.orEmpty()
         return ChatsContentUIState(

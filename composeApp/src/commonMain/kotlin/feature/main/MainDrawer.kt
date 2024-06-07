@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.QuestionAnswer
+import androidx.compose.material.icons.outlined.QuestionAnswer
 import androidx.compose.material.icons.sharp.QuestionAnswer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -47,7 +48,7 @@ fun MainDrawer(
     ) {
         ButtonWithIcon(modifier = Modifier.padding(horizontal = 16.dp),
             text = "FAQ",
-            icon = Icons.Sharp.QuestionAnswer,
+            icon = Icons.Outlined.QuestionAnswer,
             onClick = { onAction(MainAction.FAQClicked) })
         Spacer(modifier = Modifier.height(16.dp))
         Spacer(modifier = Modifier.weight(1f))

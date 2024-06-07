@@ -17,6 +17,7 @@ import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import navigation.RouteNavigator
 import util.formatted
+import util.formattedReadable
 import kotlin.coroutines.CoroutineContext
 
 @Inject
@@ -50,8 +51,8 @@ class TemplatesComponent(
             TemplateDisplayData(
                 id = it.id,
                 title = buildAnnotatedString { append(it.title) },
-                subtitle = buildAnnotatedString { append("Last updated ${it.updatedAt?.formatted()}") },
-                date = "Created ${it.createdAt.formatted()}",
+                subtitle = buildAnnotatedString { append("Last updated ${it.updatedAt?.formattedReadable()}") },
+                date = "Created ${it.createdAt.formattedReadable()}",
             )
         }.orEmpty()
         return TemplatesContentUIState(

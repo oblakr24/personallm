@@ -23,6 +23,9 @@ import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import navigation.DefaultRootComponent
 import navigation.RouteNavigator
+import util.formatTimeElapsed
+import util.formatted
+import util.formattedReadable
 import kotlin.coroutines.CoroutineContext
 
 
@@ -74,7 +77,7 @@ class ChatComponent(
             MessageDisplayData(
                 id = it.id,
                 content = it.content + if (it.finished) "" else " ... ",
-                date = it.timestamp.toString(),
+                date = it.timestamp.formatTimeElapsed(),
                 alignedLeft = !it.fromUser,
                 avatar = null,
                 imageUri = null,

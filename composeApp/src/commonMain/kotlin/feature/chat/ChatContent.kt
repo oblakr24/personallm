@@ -17,15 +17,22 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material.icons.sharp.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arkivanov.decompose.extensions.compose.stack.animation.fade
 import feature.commonui.GenericDialog
 import feature.commonui.InputBar
 import feature.commonui.MessageDisplay
@@ -49,6 +56,7 @@ fun ChatContent(
     text: String, onAction: (ChatAction) -> Unit, onBackClicked: () -> Unit
 ) {
     val selectionDialogState = rememberGenericDialogState()
+    val keyboardController = LocalSoftwareKeyboardController.current
     GenericDialog(selectionDialogState, content = {
         ModelSelectionDialog(state.models, onSelected = {
             onAction(ChatAction.ModelSelected(it))
@@ -59,6 +67,7 @@ fun ChatContent(
         titleContent = {
             Column(modifier = Modifier.wrapContentWidth().clickable {
                 selectionDialogState.open()
+                keyboardController?.hide()
             }.padding(horizontal = 12.dp, vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(state.title, color = MaterialTheme.colorScheme.onPrimaryContainer)
                 Row(modifier = Modifier.wrapContentWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -67,11 +76,10 @@ fun ChatContent(
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.alpha(0.8f)
                     )
-                    Spacer(modifier = Modifier.width(2.dp))
                     Icon(
-                        imageVector = Icons.Outlined.Settings,
+                        imageVector = Icons.Outlined.SwapVert,
                         contentDescription = "Icon",
-                        modifier = Modifier.size(12.dp),
+                        modifier = Modifier.size(14.dp),
                         tint = MaterialTheme.colorScheme.onPrimaryContainer.alpha(0.6f),
                     )
                 }

@@ -28,6 +28,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -35,12 +36,12 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun InputBar(
     input: String,
     modifier: Modifier = Modifier,
+    keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current,
     onSend: (String) -> Unit,
     onChange: (String) -> Unit,
 ) {
     val bgColor = MaterialTheme.colorScheme.primaryContainer
     val focusRequester = remember { FocusRequester() }
-    val keyboardController = LocalSoftwareKeyboardController.current
     Surface(
         modifier = modifier
             .fillMaxWidth()
