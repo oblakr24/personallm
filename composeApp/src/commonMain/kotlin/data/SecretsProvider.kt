@@ -1,12 +1,12 @@
 package data
 
-import com.rokoblak.personallm.config.SecretConfig
+import com.rokoblak.personallm.config.AppBuildConfig
 import me.tatarka.inject.annotations.Inject
 
 @Inject
 class SecretsProvider {
 
     fun openAIApiKey(): String {
-        return SecretConfig.OPENAI_API_KEY
+        return AppBuildConfig.OPENAI_API_KEY
     }
 }

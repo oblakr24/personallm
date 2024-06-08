@@ -28,7 +28,7 @@ private fun formatTimeElapsedSince(since: Instant): String {
     val elapsed = Clock.System.now().minus(since)
     val wholeDays = elapsed.inWholeDays
     val wholeHours = elapsed.inWholeHours
-    if (wholeDays > 0) return "$wholeDays d, ${wholeHours.mod(60)} h ago"
+    if (wholeDays > 0) return "$wholeDays d, ${wholeHours.mod(24)} h ago"
     val wholeMins = elapsed.inWholeMinutes
     if (wholeHours > 0) return "$wholeHours h ${wholeMins.mod(60)} min ago"
     if (wholeMins > 0) return "$wholeMins min ago"
