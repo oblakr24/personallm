@@ -5,13 +5,14 @@ import AppTypography
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,6 +36,7 @@ fun TitledScaffold(
     footer: (@Composable () -> Unit)? = null,
     leadingIcon: (@Composable () -> Unit)? = null,
     titleContent: (@Composable () -> Unit)? = null,
+    actions: @Composable RowScope.() -> Unit = {},
     hideShadows: Boolean = false,
 ) {
     Scaffold(
@@ -62,12 +64,14 @@ fun TitledScaffold(
                         if (onBackClicked != null) {
                             IconButton(onClick = { onBackClicked() }) {
                                 Icon(
-                                    imageVector = Icons.Filled.ArrowBackIosNew,
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = "Back",
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                 )
                             }
                         }
                     },
+                    actions = actions,
                 )
             }
         },

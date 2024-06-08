@@ -2,22 +2,21 @@ package feature.templates
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.text.buildAnnotatedString
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.launchMolecule
+import com.arkivanov.decompose.router.stack.push
 import data.repo.Template
 import data.repo.TemplatesRepo
 import di.VMContext
 import di.vmScope
-import feature.commonui.TemplateDisplayData
+import feature.commonui.CommonUIMappers.toDisplay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
+import navigation.DefaultRootComponent
 import navigation.RouteNavigator
-import util.formatted
-import util.formattedReadable
 import kotlin.coroutines.CoroutineContext
 
 @Inject
@@ -46,24 +45,23 @@ class TemplatesComponent(
     private fun TemplatesPresenter(
         templatesFlow: Flow<List<Template>>,
     ): TemplatesContentUIState {
-        val chats = templatesFlow.collectAsState(initial = null).value
-        val templates = chats?.map {
-            TemplateDisplayData(
-                id = it.id,
-                title = buildAnnotatedString { append(it.title) },
-                subtitle = buildAnnotatedString { append("Last updated ${it.updatedAt?.formattedReadable()}") },
-                date = "Created ${it.createdAt.formattedReadable()}",
-            )
+        val templates = templatesFlow.collectAsState(initial = null).value
+        val templatesDisplays = templates?.map {
+            it.toDisplay()
         }.orEmpty()
         return TemplatesContentUIState(
-            templates = templates,
+            templates = templatesDisplays,
         )
     }
 
     fun onAction(action: TemplatesAction) {
         when (action) {
             is TemplatesAction.TemplateClicked -> {
-                // TODO
+                nav.navigation.push(DefaultRootComponent.Config.AddTemplate(action.id))
+            }
+
+            TemplatesAction.AddNewClicked -> {
+                nav.navigation.push(DefaultRootComponent.Config.AddTemplate(null))
             }
         }
     }

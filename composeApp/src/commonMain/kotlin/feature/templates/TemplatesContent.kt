@@ -1,6 +1,8 @@
 package feature.templates
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,6 +12,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import feature.chats.ChatsAction
+import feature.commonui.PrimaryButton
 import feature.commonui.TemplateDisplay
 import feature.commonui.TemplateDisplayData
 import feature.commonui.verticalScrollbar
@@ -30,6 +34,14 @@ fun TemplatesContent(
     ) {
         item {
             Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        item {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                PrimaryButton("Add new", modifier = Modifier) {
+                    onAction(TemplatesAction.AddNewClicked)
+                }
+            }
         }
 
         items(count = state.templates.size, key = { state.templates[it].id }, itemContent = { idx ->

@@ -11,6 +11,8 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.backhandler.BackHandlerOwner
 import di.AppComponent
 import di.VMContext
+import feature.addtemplate.AddTemplateComponent
+import feature.addtemplate.AddTemplateScreen
 import feature.chat.ChatComponent
 import feature.chat.ChatScreen
 import feature.faq.FAQComponent
@@ -58,6 +60,11 @@ interface RootComponent: BackHandlerOwner {
         class Chat(val component: ChatComponent) : Child() {
             @Composable
             override fun Content() = ChatScreen(component)
+        }
+
+        class AddTemplate(val component: AddTemplateComponent) : Child() {
+            @Composable
+            override fun Content() = AddTemplateScreen(component)
         }
 
         class FAQ(val component: FAQComponent) : Child() {
@@ -134,6 +141,12 @@ class DefaultRootComponent(
                 )
             }
 
+            is Config.AddTemplate -> {
+                RootComponent.Child.AddTemplate(
+                    diComponent.addTemplateComponent(VMContext.fromContext(componentContext), config)
+                )
+            }
+
             is Config.FAQ -> {
                 RootComponent.Child.FAQ(
                     diComponent.faqComponent(VMContext.fromContext(componentContext))
@@ -161,5 +174,8 @@ class DefaultRootComponent(
 
         @Serializable
         data class Chat(val chatId: String?) : Config()
+
+        @Serializable
+        data class AddTemplate(val templateId: String?) : Config()
     }
 }

@@ -4,6 +4,7 @@ import app.cash.sqldelight.Query
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
+import data.repo.Template
 import di.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,7 +42,17 @@ class AppDatabase(
     }
 
     fun templates(): Flow<List<TemplateEntity>> {
-        return db.templateEntityQueries.selectAllTemplates().asFlow().mapToList(scope.coroutineContext)
+        return db.templateEntityQueries.selectAllTemplates().asFlow()
+            .mapToList(scope.coroutineContext)
+    }
+
+    suspend fun insertOrUpdateTemplate(template: TemplateEntity) {
+        db.templateEntityQueries.inserFullTemplate(template)
+    }
+
+    fun templateById(id: String): Flow<TemplateEntity> {
+        return db.templateEntityQueries.selectTemplateById(id).asFlow()
+            .mapToOneOrNull(scope.coroutineContext).filterNotNull()
     }
 
     suspend fun insertChat(entity: ChatEntity) {
@@ -62,7 +73,8 @@ class AppDatabase(
     }
 
     fun chatById(id: String): Flow<ChatEntity> {
-        return db.chatEntityQueries.selectChatById(id).asFlow().mapToOneOrNull(scope.coroutineContext).filterNotNull()
+        return db.chatEntityQueries.selectChatById(id).asFlow()
+            .mapToOneOrNull(scope.coroutineContext).filterNotNull()
     }
 
     suspend fun findChatById(id: String): ChatEntity? {

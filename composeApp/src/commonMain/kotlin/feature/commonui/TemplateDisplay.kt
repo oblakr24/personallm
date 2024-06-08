@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
@@ -55,11 +56,13 @@ fun TemplateDisplay(
                 width = Dimension.fillToConstraints
             },
             text = data.subtitle,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 3,
             style = MaterialTheme.typography.labelSmall,
         )
         Text(
             modifier = Modifier.constrainAs(date) {
-                top.linkTo(parent.top)
+                top.linkTo(parent.top, 4.dp)
                 end.linkTo(parent.end)
             },
             text = data.date,

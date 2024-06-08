@@ -29,6 +29,16 @@ class TemplatesRepo(
         }
     }
 
+    suspend fun insertOrUpdate(template: Template) {
+        db.insertOrUpdateTemplate(template.toEntity())
+    }
+
+    fun templateById(id: String): Flow<Template> {
+        return db.templateById(id).map {
+            it.toTemplate()
+        }
+    }
+
     private fun Template.toEntity() = TemplateEntity(
         id = id,
         version = 1,

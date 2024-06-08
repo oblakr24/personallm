@@ -10,6 +10,7 @@ import data.StorageProvider
 import data.StorageProviderImpl
 import db.createDatabase
 import de.jensklingenberg.ktorfit.Ktorfit
+import feature.addtemplate.AddTemplateComponent
 import feature.chat.ChatComponent
 import feature.chats.ChatsComponent
 import feature.faq.FAQComponent
@@ -56,6 +57,7 @@ abstract class AppComponent {
     abstract val chatsComponent: (context: VMContext) -> ChatsComponent
     abstract val templatesComponent: (context: VMContext) -> TemplatesComponent
     abstract val faqComponent: (context: VMContext) -> FAQComponent
+    abstract val addTemplateComponent: (context: VMContext, config: DefaultRootComponent.Config.AddTemplate) -> AddTemplateComponent
 
     fun pageNavigation(componentContext: ComponentContext): PageNavigation {
         return MainPageNavigator(this, componentContext)
