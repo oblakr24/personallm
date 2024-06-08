@@ -1,6 +1,7 @@
 package data.repo
 
 import data.ChatCompletionsRequestBody
+import data.ChatCompletionsRequestBody.MessageItem.Companion.ROLE_ASSISTANT
 import data.ChatCompletionsRequestBody.MessageItem.Companion.ROLE_SYSTEM
 import data.ChatCompletionsRequestBody.MessageItem.Companion.ROLE_USER
 import data.OpenAIAPIWrapper
@@ -29,7 +30,7 @@ class ChatRepo(
 ) {
     private val scope = CoroutineScope(Dispatchers.Main + Job())
 
-    suspend fun submitNew(orgChatId: String?, prompt: String, model: OpenAIAPIWrapper.Model): String {
+    suspend fun submitNew(orgChatId: String?, prompt: String, model: OpenAIAPIWrapper.Model, template: Template?): String {
         val current = orgChatId?.let { id ->
             val messages = db.chatMessages(id).firstOrNull().orEmpty()
             val chat = db.findChatById(id)?.toChat()!!
@@ -40,7 +41,7 @@ class ChatRepo(
             lastMessage = null,
             createdAt = Clock.System.now(),
             lastMessageAt = Clock.System.now(),
-            summary = ""
+            summary = "",
         ).also { curr ->
             scope.launch {
                 db.insertChat(curr.toEntity())
@@ -60,13 +61,19 @@ class ChatRepo(
         }
 
         scope.launch {
+            val systemMsg = template?.let {
+                listOf(ChatCompletionsRequestBody.Message(
+                    role = ROLE_SYSTEM,
+                    content = listOf(ChatCompletionsRequestBody.MessageItem(text = it.prompt))
+                ))
+            } ?: emptyList()
             val prevMsgs = current.prevMessages.map {
                 ChatCompletionsRequestBody.Message(
-                    role = if (it.fromUser) ROLE_USER else ROLE_SYSTEM,
+                    role = if (it.fromUser) ROLE_USER else ROLE_ASSISTANT,
                     content = listOf(ChatCompletionsRequestBody.MessageItem(text = it.content))
                 )
             }
-            api.getChatCompletions(prompt = prompt, prevMessages = prevMsgs, model = model).collect { resp ->
+            api.getChatCompletions(prompt = prompt, prevMessages = systemMsg + prevMsgs, model = model).collect { resp ->
                 resp.doOnError {
                     signaling.handleGenericError(it)
                 }.doOnSuccessSusp {

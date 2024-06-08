@@ -97,6 +97,7 @@ data class ChatCompletionsRequestBody(
             const val TYPE_IMAGE_URL = "image_url"
 
             const val ROLE_SYSTEM = "system"
+            const val ROLE_ASSISTANT = "assistant"
             const val ROLE_USER = "user"
         }
     }
