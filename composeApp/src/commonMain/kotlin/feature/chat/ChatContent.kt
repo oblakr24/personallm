@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material.icons.sharp.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,6 +38,7 @@ import feature.commonui.GenericDialog
 import feature.commonui.InputBar
 import feature.commonui.MessageDisplay
 import feature.commonui.MessageDisplayData
+import feature.commonui.TemplateDisplayData
 import feature.commonui.TitledScaffold
 import feature.commonui.rememberGenericDialogState
 import feature.commonui.verticalScrollbar
@@ -45,6 +47,8 @@ data class ChatContentUIState(
     val title: String = "New Chat",
     val messages: List<MessageDisplayData> = emptyList(),
     val models: List<ModelDisplay> = emptyList(),
+    val templates: List<TemplateDisplayData> = emptyList(),
+    val selectedTemplateId: String? = null,
     val selectedModel: String = "",
 ) {
     data class ModelDisplay(val value: String, val name: String, val selected: Boolean)
@@ -55,22 +59,35 @@ fun ChatContent(
     state: ChatContentUIState,
     text: String, onAction: (ChatAction) -> Unit, onBackClicked: () -> Unit
 ) {
-    val selectionDialogState = rememberGenericDialogState()
+    val modelSelectionDialogState = rememberGenericDialogState()
+    val templateSelectionDialogState = rememberGenericDialogState()
     val keyboardController = LocalSoftwareKeyboardController.current
-    GenericDialog(selectionDialogState, content = {
+    GenericDialog(modelSelectionDialogState, content = {
         ModelSelectionDialog(state.models, onSelected = {
             onAction(ChatAction.ModelSelected(it))
-            selectionDialogState.close()
+            modelSelectionDialogState.close()
+        })
+    })
+    GenericDialog(templateSelectionDialogState, content = {
+        TemplateSelectionDialog(state.templates, state.selectedTemplateId, onSelected = {
+            onAction(ChatAction.TemplateSelected(it))
+            templateSelectionDialogState.close()
         })
     })
     TitledScaffold(onBackClicked = onBackClicked,
         titleContent = {
-            Column(modifier = Modifier.wrapContentWidth().clickable {
-                selectionDialogState.open()
-                keyboardController?.hide()
-            }.padding(horizontal = 12.dp, vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier = Modifier.wrapContentWidth().clickable {
+                    modelSelectionDialogState.open()
+                    keyboardController?.hide()
+                }.padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(state.title, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                Row(modifier = Modifier.wrapContentWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.wrapContentWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         state.selectedModel,
                         fontSize = 12.sp,
@@ -84,37 +101,51 @@ fun ChatContent(
                     )
                 }
             }
-        },
-        content = {
-        val lazyListState = rememberLazyListState()
+        }, actions = {
+            IconButton(onClick = {
+                templateSelectionDialogState.open()
+            }, content = {
+                Icon(
+                    imageVector = Icons.Outlined.Settings,
+                    contentDescription = "Icon",
+                    modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer.alpha(0.6f),
+                )
+            })
 
-        LazyColumn(state = lazyListState, modifier = Modifier.verticalScrollbar(lazyListState)) {
-            item {
-                Spacer(modifier = Modifier.height(12.dp))
+        }, content = {
+            val lazyListState = rememberLazyListState()
+
+            LazyColumn(
+                state = lazyListState,
+                modifier = Modifier.verticalScrollbar(lazyListState)
+            ) {
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                items(
+                    count = state.messages.size,
+                    key = { state.messages[it].id },
+                    itemContent = { idx ->
+                        val item = state.messages[idx]
+                        MessageDisplay(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                            data = item,
+                        )
+                    })
             }
-
-            items(
-                count = state.messages.size,
-                key = { state.messages[it].id },
-                itemContent = { idx ->
-                    val item = state.messages[idx]
-                    MessageDisplay(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-                        data = item
-                    )
-                })
-        }
-    }, footer = {
-        Row(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
-            InputBar(
-                input = text,
-                modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(24.dp),
-                onChange = {
-                    onAction(ChatAction.TextChanged(it))
-                },
-                onSend = {
-                    onAction(ChatAction.SendClicked)
-                })
-        }
-    })
+        }, footer = {
+            Row(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+                InputBar(
+                    input = text,
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 16.dp, vertical = 12.dp),
+                    onChange = {
+                        onAction(ChatAction.TextChanged(it))
+                    },
+                    onSend = {
+                        onAction(ChatAction.SendClicked)
+                    })
+            }
+        })
 }
