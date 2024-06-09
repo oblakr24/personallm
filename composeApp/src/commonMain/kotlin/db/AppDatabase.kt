@@ -1,10 +1,8 @@
 package db
 
-import app.cash.sqldelight.Query
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
-import data.repo.Template
 import di.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,8 +35,8 @@ class AppDatabase(
             .mapToList(scope.coroutineContext)
     }
 
-    fun chats(): Flow<List<ChatEntity>> {
-        return db.chatEntityQueries.selectAllChats().asFlow().mapToList(scope.coroutineContext)
+    fun chats(sortAsc: Boolean): Flow<List<ChatEntity>> {
+        return (if (sortAsc) db.chatEntityQueries.selectAllChatsAsc() else db.chatEntityQueries.selectAllChatsDesc()).asFlow().mapToList(scope.coroutineContext)
     }
 
     fun templates(): Flow<List<TemplateEntity>> {
@@ -55,9 +53,10 @@ class AppDatabase(
             .mapToOneOrNull(scope.coroutineContext).filterNotNull()
     }
 
-    suspend fun insertChat(entity: ChatEntity) {
+    suspend fun insertOrUpdateChat(entity: ChatEntity) {
         db.chatEntityQueries.insertOrReplaceChat(
             id = entity.id,
+            templateId = entity.templateId,
             version = entity.version,
             creationTimestamp = entity.creationTimestamp,
             lastMessageTimestamp = entity.lastMessageTimestamp,

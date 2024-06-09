@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS ChatEntity (
     id TEXT NOT NULL PRIMARY KEY,
+    templateId TEXT,
     version INTEGER NOT NULL,
     creationTimestamp INTEGER NOT NULL,
     lastMessageTimestamp INTEGER NOT NULL,
@@ -8,9 +9,15 @@ CREATE TABLE IF NOT EXISTS ChatEntity (
 
 -- Queries
 -- Select all chats
-selectAllChats:
+selectAllChatsDesc:
 SELECT *
-FROM ChatEntity;
+FROM ChatEntity
+ORDER BY lastMessageTimestamp DESC, creationTimestamp DESC;
+
+selectAllChatsAsc:
+SELECT *
+FROM ChatEntity
+ORDER BY lastMessageTimestamp ASC, creationTimestamp ASC;
 
 -- Select a chat by ID
 selectChatById:
@@ -20,8 +27,8 @@ WHERE id = ?;
 
 -- Upsert a chat
 insertOrReplaceChat:
-INSERT OR REPLACE INTO ChatEntity (id, version, creationTimestamp, lastMessageTimestamp, summary)
-VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO ChatEntity (id, templateId, version, creationTimestamp, lastMessageTimestamp, summary)
+VALUES (?, ?, ?, ?, ?, ?);
 
 -- Update the summary of a chat by ID
 updateChatSummaryById:

@@ -34,18 +34,19 @@ class ChatRepo(
         val current = orgChatId?.let { id ->
             val messages = db.chatMessages(id).firstOrNull().orEmpty()
             val chat = db.findChatById(id)?.toChat()!!
-            chat.copy(prevMessages = messages.map { it.toDomain() })
+            chat.copy(prevMessages = messages.map { it.toDomain() }, templateId = template?.id)
         } ?: Chat(
             id = randomUUID(),
+            templateId = template?.id,
             prevMessages = emptyList(),
             lastMessage = null,
             createdAt = Clock.System.now(),
             lastMessageAt = Clock.System.now(),
             summary = "",
-        ).also { curr ->
-            scope.launch {
-                db.insertChat(curr.toEntity())
-            }
+        )
+
+        scope.launch {
+            db.insertOrUpdateChat(current.toEntity())
         }
 
         val userMessage = ChatMessage(
@@ -104,8 +105,8 @@ class ChatRepo(
         }
     }
 
-    fun chatsFlow(): Flow<List<Chat>> {
-        return db.chats().map { entities ->
+    fun chatsFlow(sortAsc: Boolean): Flow<List<Chat>> {
+        return db.chats(sortAsc = sortAsc).map { entities ->
             entities.map {
                 it.toChat()
             }
@@ -149,6 +150,7 @@ class ChatRepo(
 
     private fun Chat.toEntity() = ChatEntity(
         id = id,
+        templateId = templateId,
         version = 1,
         creationTimestamp = createdAt.toEpochMilliseconds(),
         lastMessageTimestamp = lastMessageAt.toEpochMilliseconds(),
@@ -157,6 +159,7 @@ class ChatRepo(
 
     private fun ChatEntity.toChat() = Chat(
         id = id,
+        templateId = templateId,
         createdAt = Instant.fromEpochMilliseconds(creationTimestamp),
         lastMessageAt = Instant.fromEpochMilliseconds(lastMessageTimestamp),
         summary = summary,
@@ -177,6 +180,7 @@ fun <K, V> Map<K, V>.withUpdated(key: K, value: (V?) -> V?): Map<K, V> {
 
 data class Chat(
     val id: String,
+    val templateId: String?,
     val summary: String,
     val createdAt: Instant,
     val lastMessageAt: Instant,
