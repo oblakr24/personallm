@@ -6,12 +6,9 @@ import app.cash.molecule.RecompositionMode
 import app.cash.molecule.launchMolecule
 import com.arkivanov.decompose.router.stack.push
 import data.DarkModeState
-import data.repo.Chat
 import di.VMContext
 import di.vmScope
-import feature.chats.ChatsContentUIState
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
+import getPlatform
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import me.tatarka.inject.annotations.Assisted
@@ -49,7 +46,7 @@ class MainComponent(
         val darkModeState = darkModeFlow.collectAsState(null).value
         val drawer = MainDrawerUIState(
             darkMode = darkModeState,
-            versionLabel = "Version TODO",
+            versionLabel = "Version ${getPlatform().appVersion.name}",
         )
         return MainScreenUIState(drawer)
     }
