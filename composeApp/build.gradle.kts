@@ -4,6 +4,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
@@ -167,9 +168,34 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    signingConfigs {
+        create("release") {
+            val prop = Properties().apply {
+                load(FileInputStream(File(rootProject.rootDir, "local.properties")))
+            }
+            val storePass = prop.getProperty("STORE_PASS", null) ?: throw IllegalAccessError("No store pass, please ensure you have it in local.properties")
+            val keyPass = prop.getProperty("KEY_PASS", null) ?: throw IllegalAccessError("No key pass, please ensure you have it in local.properties")
+
+            storeFile = file("personallm.jks")
+            storePassword = storePass
+            keyAlias = "personallm"
+            keyPassword = keyPass
+        }
+    }
+
     buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = false
+            signingConfig = signingConfigs.getByName("release")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+        debug {
+            applicationIdSuffix = ".debug"
         }
     }
 

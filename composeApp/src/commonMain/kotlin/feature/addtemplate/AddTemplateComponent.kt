@@ -79,10 +79,11 @@ class AddTemplateComponent(
         val initial = initialTemplateFlow.collectAsState(null).value
         val dataIsSame = initial?.let {
             it.title == title && it.prompt == prompt
-        } ?: (title.isBlank() && prompt.isBlank())
+        } ?: false
+        val dataIncomplete = title.isBlank() || prompt.isBlank()
 
         return AddTemplateContentUIState(
-            saveEnabled = !dataIsSame,
+            saveEnabled = !dataIsSame && !dataIncomplete,
             new = config.templateId == null,
         )
     }

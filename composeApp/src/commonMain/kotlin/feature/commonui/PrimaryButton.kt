@@ -2,6 +2,7 @@ package feature.commonui
 
 import AppColors
 import AppTheme
+import alpha
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
@@ -36,7 +37,7 @@ fun PrimaryButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            disabledContainerColor = AppColors.DisabledGrayBackground,
+            disabledContainerColor = MaterialTheme.colorScheme.primaryContainer.alpha(0.4f),
             disabledContentColor = AppColors.DisabledGray,
         ),
         contentPadding = contentPadding,
@@ -45,7 +46,11 @@ fun PrimaryButton(
         if (loading) {
             LoadingSpinner(trackColor = if (enabled) AppColors.FadedGreen else AppColors.Gray400)
         } else {
-            Text(text = text, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.alpha(if (enabled) 1.0f else 0.4f)
+            )
         }
     }
 }
