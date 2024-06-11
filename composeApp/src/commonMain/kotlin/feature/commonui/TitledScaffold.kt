@@ -37,6 +37,7 @@ fun TitledScaffold(
     leadingIcon: (@Composable () -> Unit)? = null,
     titleContent: (@Composable () -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
+    floatingActionButton: @Composable () -> Unit = {},
     hideShadows: Boolean = false,
 ) {
     Scaffold(
@@ -84,7 +85,8 @@ fun TitledScaffold(
                     it()
                 }
             }
-        }
+        },
+        floatingActionButton = floatingActionButton,
     ) { innerPadding ->
         Box(
             modifier = Modifier

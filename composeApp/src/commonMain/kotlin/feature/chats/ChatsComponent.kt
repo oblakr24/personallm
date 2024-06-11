@@ -64,7 +64,7 @@ class ChatsComponent(
         }.orEmpty()
         return ChatsContentUIState(
             chats = messages,
-            sortOrder = "Sort: " + if (sortAsc) "oldest first" else "newest first",
+            sortOrder = if (sortAsc) "Oldest first" else "Newest first",
         )
     }
 

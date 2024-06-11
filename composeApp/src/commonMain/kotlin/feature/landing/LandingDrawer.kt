@@ -1,8 +1,7 @@
-package feature.main
+package feature.landing
 
 import AppTheme
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,17 +9,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Message
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.QuestionAnswer
 import androidx.compose.material.icons.outlined.QuestionAnswer
-import androidx.compose.material.icons.sharp.QuestionAnswer
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,15 +24,15 @@ import feature.commonui.ButtonWithIcon
 import feature.commonui.PrimaryTextButton
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-data class MainDrawerUIState(
+data class LandingDrawerUIState(
     val darkMode: DarkModeState? = null,
     val versionLabel: String = "",
 )
 
 @Composable
-fun MainDrawer(
-    state: MainDrawerUIState,
-    onAction: (MainAction) -> Unit,
+fun LandingDrawer(
+    state: LandingDrawerUIState,
+    onAction: (LandingAction) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -49,7 +42,7 @@ fun MainDrawer(
         ButtonWithIcon(modifier = Modifier.padding(horizontal = 16.dp),
             text = "FAQ",
             icon = Icons.Outlined.QuestionAnswer,
-            onClick = { onAction(MainAction.FAQClicked) })
+            onClick = { onAction(LandingAction.FAQClicked) })
         Spacer(modifier = Modifier.height(16.dp))
         Spacer(modifier = Modifier.weight(1f))
 
@@ -68,13 +61,13 @@ fun MainDrawer(
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 PrimaryTextButton("Light", small = true) {
-                    onAction(MainAction.SetDarkMode(DarkModeState.OFF))
+                    onAction(LandingAction.SetDarkMode(DarkModeState.OFF))
                 }
                 PrimaryTextButton("Dark", small = true) {
-                    onAction(MainAction.SetDarkMode(DarkModeState.ON))
+                    onAction(LandingAction.SetDarkMode(DarkModeState.ON))
                 }
                 PrimaryTextButton("Auto", small = true) {
-                    onAction(MainAction.SetDarkMode(DarkModeState.FOLLOW_SYSTEM))
+                    onAction(LandingAction.SetDarkMode(DarkModeState.FOLLOW_SYSTEM))
                 }
             }
         }
@@ -95,7 +88,7 @@ fun MainDrawer(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 ButtonWithIcon("Github", Icons.Filled.Code) {
-                    onAction(MainAction.OpenRepoUrl)
+                    onAction(LandingAction.OpenRepoUrl)
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
@@ -110,8 +103,8 @@ fun MainDrawer(
 private fun MainDrawerPreview() {
     val darkMode = false
     AppTheme(overrideDarkMode = darkMode) {
-        MainDrawer(
-            MainDrawerUIState(
+        LandingDrawer(
+            LandingDrawerUIState(
                 darkMode = DarkModeState.ON,
                 versionLabel = "Version 1.0.0",
             ),
