@@ -1,5 +1,6 @@
 package feature.addtemplate
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,16 +30,18 @@ fun AddTemplateContent(
         title = if (state.new) "Create Template" else "Edit Template",
         onBackClicked = onBackClicked,
         content = {
-            Spacer(Modifier.height(16.dp))
-            Text("Title:", modifier = Modifier.padding(horizontal = 24.dp))
-            TextField(value = title, onValueChange = { new ->
-                onAction(AddTemplateAction.OnTitleChanged(new))
-            }, modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp))
-            Spacer(Modifier.height(24.dp))
-            Text("Prompt:", modifier = Modifier.padding(horizontal = 24.dp))
-            TextField(value = prompt, onValueChange = { new ->
-                onAction(AddTemplateAction.OnPromptChanged(new))
-            }, modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp))
+            Column {
+                Spacer(Modifier.height(16.dp))
+                Text("Title:", modifier = Modifier.padding(horizontal = 24.dp))
+                TextField(value = title, onValueChange = { new ->
+                    onAction(AddTemplateAction.OnTitleChanged(new))
+                }, modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp))
+                Spacer(Modifier.height(24.dp))
+                Text("Prompt:", modifier = Modifier.padding(horizontal = 24.dp))
+                TextField(value = prompt, onValueChange = { new ->
+                    onAction(AddTemplateAction.OnPromptChanged(new))
+                }, modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp))
+            }
         },
         footer = {
             PrimaryButton(

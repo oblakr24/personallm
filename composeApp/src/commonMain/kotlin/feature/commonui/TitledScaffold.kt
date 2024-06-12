@@ -3,6 +3,7 @@ package feature.commonui
 import AppTheme
 import AppTypography
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
@@ -32,7 +33,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun TitledScaffold(
     title: String? = null,
     onBackClicked: (() -> Unit)? = null,
-    content: @Composable ColumnScope.() -> Unit,
+    content: @Composable BoxScope.() -> Unit,
     footer: (@Composable () -> Unit)? = null,
     leadingIcon: (@Composable () -> Unit)? = null,
     titleContent: (@Composable () -> Unit)? = null,
@@ -93,12 +94,7 @@ fun TitledScaffold(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                content()
-            }
+            content()
         }
     }
 }

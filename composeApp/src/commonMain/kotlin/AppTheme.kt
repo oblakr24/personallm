@@ -25,6 +25,7 @@ private val LightColorScheme = lightColorScheme(
     tertiary = AppColors.PrimaryGreen,
     background = AppColors.WhiteBG,
     primaryContainer = PrimaryVariantLight,
+    onPrimaryContainer = AppColors.VeryDarkGray,
     secondaryContainer = PrimaryVariantLight,
     surface = AppColors.WhiteBG,
     onSurface = AppColors.IconDarkGray,
@@ -38,6 +39,7 @@ private val DarkColorScheme = darkColorScheme(
     tertiary = SecondaryDark,
     primaryContainer = PrimaryVariantDark,
     secondaryContainer = PrimaryVariantDark,
+    onPrimaryContainer = AppColors.OffWhiteBG,
 )
 
 @Composable

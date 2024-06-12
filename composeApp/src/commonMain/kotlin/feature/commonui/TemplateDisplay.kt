@@ -26,9 +26,9 @@ data class TemplateDisplayData(
 
 @Composable
 fun TemplateDisplay(
-    modifier: Modifier = Modifier,
-    background: Color = MaterialTheme.colorScheme.background,
     data: TemplateDisplayData,
+    background: Color = MaterialTheme.colorScheme.background,
+    modifier: Modifier = Modifier,
 ) {
     ConstraintLayout(
         modifier = modifier

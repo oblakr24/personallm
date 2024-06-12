@@ -1,6 +1,7 @@
 package feature.landing
 
 import AppTheme
+import alpha
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -75,7 +76,7 @@ fun LandingDrawer(
         Column(
             Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primaryContainer)
+                .background(MaterialTheme.colorScheme.primaryContainer.alpha(0.6f))
                 .padding(16.dp)
         ) {
             Spacer(modifier = Modifier.height(12.dp))
@@ -84,9 +85,7 @@ fun LandingDrawer(
                     .fillMaxWidth(),
             ) {
                 Text("This is an open-source app.\nYou can post feedback, change requests or contribute on Github:")
-
                 Spacer(modifier = Modifier.height(12.dp))
-
                 ButtonWithIcon("Github", Icons.Filled.Code) {
                     onAction(LandingAction.OpenRepoUrl)
                 }

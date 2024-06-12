@@ -35,6 +35,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun InputBar(
     input: String,
+    focusToInput: Boolean = false,
     modifier: Modifier = Modifier,
     keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current,
     onSend: (String) -> Unit,
@@ -46,9 +47,9 @@ fun InputBar(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(50.dp, 200.dp),
-        shadowElevation = 4.dp,
+        shadowElevation = 2.dp,
         border = BorderStroke(1.dp, Color.Transparent),
-        shape = RoundedCornerShape(25.dp),
+        shape = RoundedCornerShape(16.dp),
         color = Color.Transparent,
     ) {
         Row(
@@ -96,9 +97,11 @@ fun InputBar(
             }
         }
     }
-    LaunchedEffect(key1 = Unit) {
-        focusRequester.requestFocus()
-        keyboardController?.show()
+    LaunchedEffect(key1 = focusToInput) {
+        if (focusToInput) {
+            focusRequester.requestFocus()
+            keyboardController?.show()
+        }
     }
 }
 

@@ -2,6 +2,7 @@ package feature.commonui
 
 import AppColors
 import AppTheme
+import alpha
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
@@ -46,22 +48,22 @@ fun ButtonWithIcon(
         },
         modifier = modifier.height(56.dp),
         enabled = enabled,
-        border = BorderStroke(1.dp, AppColors.GrayLine),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.alpha(0.4f)),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = AppColors.WhiteBG,
-            contentColor = AppColors.PrimaryTextGray,
-            disabledContainerColor = Color.Transparent,
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            disabledContainerColor = MaterialTheme.colorScheme.primaryContainer.alpha(0.4f),
             disabledContentColor = AppColors.DisabledGray,
         ),
         shape = RoundedCornerShape(8.dp),
         contentPadding = PaddingValues(16.dp)
     ) {
-        Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+        Row(modifier = Modifier.wrapContentWidth(), verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = icon,
                 contentDescription = "Icon",
                 modifier = Modifier.size(24.dp),
-                tint = Color.Unspecified,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
             )
             Spacer(Modifier.weight(1f))
             if (loading) {
