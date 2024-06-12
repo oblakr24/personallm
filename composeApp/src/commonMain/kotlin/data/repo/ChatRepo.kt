@@ -30,7 +30,12 @@ class ChatRepo(
 ) {
     private val scope = CoroutineScope(Dispatchers.Main + Job())
 
-    suspend fun submitNew(orgChatId: String?, prompt: String, model: OpenAIAPIWrapper.Model, template: Template?): String {
+    suspend fun submitNew(
+        orgChatId: String?,
+        prompt: String,
+        model: OpenAIAPIWrapper.Model,
+        template: Template?
+    ): String {
         val current = orgChatId?.let { id ->
             val messages = db.chatMessages(id).firstOrNull().orEmpty()
             val chat = db.findChatById(id)?.toChat()!!
@@ -49,48 +54,35 @@ class ChatRepo(
             db.insertOrUpdateChat(current.toEntity())
         }
 
-        val userMessage = ChatMessage(
-            id = randomUUID(),
-            content = prompt,
-            fromUser = true,
-            timestamp = Clock.System.now(),
-            finished = true
+        submitMessage(
+            chatId = current.id,
+            model = model,
+            orgMessage = null,
+            prompt = prompt,
+            prevMessages = current.prevMessages,
+            template = template,
         )
-
-        scope.launch {
-            db.insertChatMessage(userMessage.toEntity(current.id))
-        }
-
-        scope.launch {
-            val systemMsg = template?.let {
-                listOf(ChatCompletionsRequestBody.Message(
-                    role = ROLE_SYSTEM,
-                    content = listOf(ChatCompletionsRequestBody.MessageItem(text = it.prompt))
-                ))
-            } ?: emptyList()
-            val prevMsgs = current.prevMessages.map {
-                ChatCompletionsRequestBody.Message(
-                    role = if (it.fromUser) ROLE_USER else ROLE_ASSISTANT,
-                    content = listOf(ChatCompletionsRequestBody.MessageItem(text = it.content))
-                )
-            }
-            api.getChatCompletions(prompt = prompt, prevMessages = systemMsg + prevMsgs, model = model).collect { resp ->
-                resp.doOnError {
-                    signaling.handleGenericError(it)
-                }.doOnSuccessSusp {
-                    val msg = ChatMessage(
-                        id = it.response.id,
-                        content = it.message,
-                        fromUser = false,
-                        timestamp = Clock.System.now(),
-                        finished = it.response.done(),
-                    )
-                    db.insertChatMessage(msg.toEntity(current.id))
-                }
-            }
-            updateSummary(chatId = current.id, prompt = prompt, prevMessages = prevMsgs)
-        }
         return current.id
+    }
+
+    suspend fun delete() {
+        // TODO
+    }
+
+    // TODO: From user
+    suspend fun edit(chatId: String, messageId: String, newPrompt: String, isFromUser: Boolean, model: OpenAIAPIWrapper.Model, template: Template?) {
+        val messages = db.chatMessages(chatId).firstOrNull().orEmpty()
+        val orgMessage = messages.first { it.id == messageId }
+        val prevMessages = messages.filter { it.timestamp < orgMessage.timestamp }.map { it.toDomain() }
+
+        submitMessage(
+            chatId = chatId,
+            model = model,
+            orgMessage = orgMessage.toDomain(),
+            prompt = newPrompt,
+            prevMessages = prevMessages,
+            template = template,
+        )
     }
 
     fun flow(chatId: String): Flow<List<ChatMessage>> {
@@ -113,7 +105,74 @@ class ChatRepo(
         }
     }
 
-    private fun updateSummary(chatId: String, prompt: String, prevMessages: List<ChatCompletionsRequestBody.Message>) {
+    private suspend fun submitMessage(
+        chatId: String,
+        orgMessage: ChatMessage?,
+        prompt: String,
+        prevMessages: List<ChatMessage>,
+        model: OpenAIAPIWrapper.Model,
+        template: Template?
+    ) {
+        val userMessage = orgMessage?.copy(
+            content = prompt,
+        ) ?: ChatMessage(
+            id = randomUUID(),
+            content = prompt,
+            fromUser = true,
+            timestamp = Clock.System.now(),
+            finished = true
+        )
+
+        scope.launch {
+            if (orgMessage != null) {
+                db.deleteChatMessagesAfter(timestamp = orgMessage.timestamp)
+            }
+            db.insertChatMessage(userMessage.toEntity(chatId))
+        }
+
+        scope.launch {
+            val systemMsg = template?.let {
+                listOf(
+                    ChatCompletionsRequestBody.Message(
+                        role = ROLE_SYSTEM,
+                        content = listOf(ChatCompletionsRequestBody.MessageItem(text = it.prompt))
+                    )
+                )
+            } ?: emptyList()
+            val prevMsgs = prevMessages.map {
+                ChatCompletionsRequestBody.Message(
+                    role = if (it.fromUser) ROLE_USER else ROLE_ASSISTANT,
+                    content = listOf(ChatCompletionsRequestBody.MessageItem(text = it.content))
+                )
+            }
+            api.getChatCompletions(
+                prompt = prompt,
+                prevMessages = systemMsg + prevMsgs,
+                model = model
+            ).collect { resp ->
+                resp.doOnError {
+                    signaling.handleGenericError(it)
+                }.doOnSuccessSusp {
+                    val msg = ChatMessage(
+                        id = it.response.id,
+                        content = it.message,
+                        fromUser = false,
+                        timestamp = Clock.System.now(),
+                        finished = it.response.done(),
+                    )
+                    db.insertChatMessage(msg.toEntity(chatId))
+                }
+            }
+            updateSummary(chatId = chatId, prompt = prompt, prevMessages = prevMsgs)
+        }
+        // TODO: Update chat (timestamp, template, etc.)
+    }
+
+    private fun updateSummary(
+        chatId: String,
+        prompt: String,
+        prevMessages: List<ChatCompletionsRequestBody.Message>
+    ) {
         // TODO: logic to update it more often?
         if (prevMessages.isNotEmpty()) return
         val msgs = listOf(
@@ -166,16 +225,6 @@ class ChatRepo(
         prevMessages = emptyList(),
         lastMessage = null,
     )
-}
-
-fun <K, V> Map<K, V>.withUpdated(key: K, value: (V?) -> V?): Map<K, V> {
-    return toMutableMap().apply {
-        val current = this[key]
-        val new = value(current)
-        if (new != null) {
-            this[key] = new
-        }
-    }.toMap()
 }
 
 data class Chat(

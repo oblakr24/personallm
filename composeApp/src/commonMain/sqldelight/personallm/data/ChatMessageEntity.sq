@@ -34,3 +34,13 @@ updateMessage:
 UPDATE ChatMessageEntity
 SET content = ?, timestamp = ?, fromUser = ?, finished = ?
 WHERE id = ?;
+
+-- Delete messages with a timestamp greater than a specific value
+deleteMessagesAboveTimestamp:
+DELETE FROM ChatMessageEntity
+WHERE timestamp > ?;
+
+-- Delete by ID
+deleteById:
+DELETE FROM ChatMessageEntity
+WHERE id = ?;

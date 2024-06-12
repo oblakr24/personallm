@@ -11,6 +11,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.datetime.Instant
 import me.tatarka.inject.annotations.Inject
 import personallm.data.ChatEntity
 import personallm.data.ChatMessageEntity
@@ -83,6 +84,14 @@ class AppDatabase(
 
     suspend fun insertChatMessage(entity: ChatMessageEntity) {
         db.chatMessageEntityQueries.inserFullMessage(entity)
+    }
+
+    suspend fun deleteChatMessage(id: String) {
+        db.chatMessageEntityQueries.deleteById(id)
+    }
+
+    suspend fun deleteChatMessagesAfter(timestamp: Instant) {
+        db.chatMessageEntityQueries.deleteMessagesAboveTimestamp(timestamp = timestamp.toEpochMilliseconds())
     }
 
     suspend fun insertListingItem(itemText: String) {
