@@ -1,8 +1,10 @@
 package feature.commonui
 
 import AppTheme
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,13 +16,25 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -33,11 +47,13 @@ data class MessageDisplayData(
     val imageUri: String?,
 )
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MessageDisplay(modifier: Modifier = Modifier, data: MessageDisplayData) {
+fun MessageDisplay(data: MessageDisplayData, onEditClicked: () -> Unit, onDeleteClicked: () -> Unit, modifier: Modifier = Modifier) {
     val alignment = if (data.alignedLeft) Alignment.Start else Alignment.End
     val backgroundColor = if (data.alignedLeft) Color.LightGray else Color.Blue
     val textColor = if (data.alignedLeft) Color.Black else Color.White
+
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = alignment
@@ -55,10 +71,26 @@ fun MessageDisplay(modifier: Modifier = Modifier, data: MessageDisplayData) {
             Column(
                 modifier = Modifier
                     .wrapContentWidth()
-                    .padding(4.dp)
+                    .padding(vertical = 4.dp, horizontal = 4.dp)
             ) {
+                val dropdownState = rememberGenericDropdownState()
+
+                GenericDropdownMenu(dropdownState) {
+                    GenericDropdownMenuItem("Edit", Icons.Outlined.Edit) {
+                        onEditClicked()
+                    }
+                    GenericDropdownMenuItem("Delete", Icons.Outlined.Delete) {
+                        onDeleteClicked()
+                    }
+                }
+
                 Text(
                     modifier = Modifier
+                        .combinedClickable(onLongClick = {
+                            dropdownState.open()
+                        }, onClick = {
+
+                        })
                         .background(backgroundColor, RoundedCornerShape(12.dp))
                         .align(alignment)
                         .widthIn(min = 20.dp, max = 220.dp)
@@ -72,7 +104,8 @@ fun MessageDisplay(modifier: Modifier = Modifier, data: MessageDisplayData) {
                         modifier = modifier
                             .size(220.dp)
                             .padding(vertical = 8.dp)
-                            .border(1.dp, MaterialTheme.colorScheme.background, CircleShape),
+                            .border(1.dp, MaterialTheme.colorScheme.background, CircleShape)
+                        ,
                         color = MaterialTheme.colorScheme.background,
                     ) {
                         Box(
@@ -106,7 +139,7 @@ fun MessageDisplayOtherPreview() {
                 alignedLeft = true,
                 avatar = AvatarData.Initials("AB", Color.Blue),
                 imageUri = null,
-            )
+            ), onEditClicked = {}, onDeleteClicked = {},
         )
     }
 }
@@ -124,7 +157,7 @@ fun MessageDisplayMinePreview() {
                 alignedLeft = false,
                 avatar = null,
                 imageUri = null,
-            )
+            ), onEditClicked = {}, onDeleteClicked = {},
         )
     }
 }

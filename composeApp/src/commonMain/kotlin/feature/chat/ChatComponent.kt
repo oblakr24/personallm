@@ -8,13 +8,13 @@ import data.OpenAIAPIWrapper
 import data.repo.Chat
 import data.repo.ChatMessage
 import data.repo.ChatRepo
+import data.repo.InAppSignaling
 import data.repo.Template
 import data.repo.TemplatesRepo
 import di.VMContext
 import di.vmScope
 import feature.commonui.CommonUIMappers.toDisplay
 import feature.commonui.MessageDisplayData
-import feature.commonui.TemplateDisplayData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,18 +24,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import navigation.DefaultRootComponent
 import navigation.RouteNavigator
 import util.formatTimeElapsed
-import util.formatted
-import util.formattedReadable
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -45,6 +43,7 @@ class ChatComponent(
     private val nav: RouteNavigator,
     private val repo: ChatRepo,
     private val templatesRepo: TemplatesRepo,
+    private val signaling: InAppSignaling,
     @Assisted private val vmContext: VMContext,
     @Assisted private val config: DefaultRootComponent.Config.Chat,
 ): VMContext by vmContext, RouteNavigator by nav {
@@ -55,11 +54,9 @@ class ChatComponent(
     private val _text = MutableStateFlow("")
     val text = _text.asStateFlow()
 
-    private val selectedModel = MutableStateFlow(OpenAIAPIWrapper.Model.V3)
-
     private val templates = templatesRepo.templatesFlow().stateIn(scope, SharingStarted.Eagerly, emptyList())
 
-    private val selectedTemplate = MutableStateFlow<Template?>(null)
+    private val inputState = MutableStateFlow(InputState())
 
     private val chat: Flow<Chat> = chatId.flatMapLatest { id ->
         if (id == null) emptyFlow() else repo.chatById(id).shareIn(scope, SharingStarted.Eagerly)
@@ -75,10 +72,12 @@ class ChatComponent(
 
     init {
         scope.launch {
-            chat.firstOrNull()?.templateId?.let { templateId ->
-                templatesRepo.templateById(templateId).firstOrNull()?.let { template ->
-                    selectedTemplate.value = template
-                }
+            val templateId= if (config.chatId != null) chat.firstOrNull()?.templateId else null
+            val initialTemplate = templateId?.let { templatesRepo.templateById(it).firstOrNull() }
+            if (initialTemplate != null) {
+                inputState.update { it.copy(selectedTemplate = initialTemplate) }
+            } else {
+                inputState.update { it.copy(showingTemplatesCarousel = true) }
             }
         }
     }
@@ -86,28 +85,31 @@ class ChatComponent(
     val state: StateFlow<ChatContentUIState> by lazy {
         scope.launchMolecule(mode = RecompositionMode.Immediate) {
             ChatPresenter(
+                promptFlow = text,
                 messageFlow = message,
-                selectedModelFlow = selectedModel,
                 titleFlow = title,
                 templatesFlow = templates,
-                selectedTemplateFlow = selectedTemplate,
+                inputStateFlow = inputState,
             )
         }
     }
 
+    private var initialFocus: Boolean = true
+
     @Composable
     private fun ChatPresenter(
+        promptFlow: StateFlow<String>,
         messageFlow: Flow<List<ChatMessage>>,
-        selectedModelFlow: StateFlow<OpenAIAPIWrapper.Model>,
         titleFlow: Flow<String>,
         templatesFlow: Flow<List<Template>>,
-        selectedTemplateFlow: Flow<Template?>,
+        inputStateFlow: StateFlow<InputState>,
     ): ChatContentUIState {
+        val prompt = promptFlow.collectAsState().value
         val repoMessages = messageFlow.collectAsState(initial = null).value
-        val selectedModel = selectedModelFlow.collectAsState().value
         val templates = templatesFlow.collectAsState(emptyList()).value
-        val selectedTemplate = selectedTemplateFlow.collectAsState(null).value
         val title = titleFlow.collectAsState(null).value ?: "New Chat"
+        val inputState = inputStateFlow.collectAsState().value
+
         val messages = repoMessages?.map {
             MessageDisplayData(
                 id = it.id,
@@ -122,19 +124,32 @@ class ChatComponent(
             ChatContentUIState.ModelDisplay(
                 value = it.value,
                 name = it.displayName(),
-                selected = it == selectedModel,
+                selected = it == inputState.selectedModel,
             )
         }
-        val templatesDisplays = templates?.map {
+        val templatesDisplays = templates.map {
             it.toDisplay()
-        }.orEmpty()
+        }
+        val focusToInput = !initialFocus && config.chatId != null
+        this.initialFocus = false
+
+        val sendEnabled = if (inputState.editState != null) {
+            prompt != inputState.editState.orgPrompt
+        } else {
+            prompt.isNotBlank()
+        }
+
         return ChatContentUIState(
             messages = messages,
             models = models,
-            selectedModel = selectedModel.displayName(),
+            selectedModel = inputState.selectedModel.displayName(),
             title = title,
-            selectedTemplateId = selectedTemplate?.id,
+            selectedTemplateId = inputState.selectedTemplate?.id,
             templates = templatesDisplays,
+            focusToInput = focusToInput,
+            showTemplatesCarousel = inputState.showingTemplatesCarousel && inputState.selectedTemplate == null,
+            inEditState = inputState.editState != null,
+            sendEnabled = sendEnabled,
         )
     }
 
@@ -143,12 +158,19 @@ class ChatComponent(
             ChatAction.SendClicked -> {
                 val prompt = text.value
                 _text.value = ""
-                val model = selectedModel.value
-                val template = selectedTemplate.value
+                val currInput = inputState.value
+                val editState = currInput.editState
+                val model = currInput.selectedModel
+                val template = currInput.selectedTemplate
                 val existingChatId = chatId.value
                 scope.launch {
-                    val newChatId = repo.submitNew(existingChatId, prompt = prompt, model = model, template = template)
-                    chatId.value = newChatId
+                    if (editState != null && existingChatId != null) {
+                        repo.edit(chatId = existingChatId, messageId = editState.messageId, newPrompt = prompt, model = model, isFromUser = true, template = template)
+                        inputState.update { it.copy(editState = null) }
+                    } else {
+                        val newChatId = repo.submitNew(existingChatId, prompt = prompt, model = model, template = template)
+                        chatId.value = newChatId
+                    }
                 }
             }
             is ChatAction.TextChanged -> {
@@ -156,12 +178,52 @@ class ChatComponent(
             }
 
             is ChatAction.ModelSelected -> {
-                selectedModel.value = OpenAIAPIWrapper.Model.entries.first { it.value == action.display.value }
+                val newModel = OpenAIAPIWrapper.Model.entries.first { it.value == action.display.value }
+                inputState.update { it.copy(selectedModel = newModel) }
             }
 
             is ChatAction.TemplateSelected -> {
-                selectedTemplate.value = templates.value.firstOrNull { action.display.id == it.id }
+                val newTemplate = templates.value.firstOrNull { action.display.id == it.id }
+                inputState.update { it.copy(selectedTemplate = newTemplate) }
+                signaling.sendGenericMessage("Template ${newTemplate?.title} applied")
+            }
+
+            ChatAction.ShowNoTemplatesMessage -> {
+                signaling.sendGenericMessage("No templates yet", subtitle = "Create a new template in the templates panel")
+            }
+
+            ChatAction.DismissTemplates -> {
+                inputState.update { it.copy(showingTemplatesCarousel = false) }
+            }
+
+            is ChatAction.DeleteClicked -> {
+                scope.launch {
+                    // TODO: Finalize
+                    repo.delete()
+                }
+            }
+
+            is ChatAction.EditClicked -> {
+                inputState.update { it.copy(editState = EditState(messageId = action.display.id, orgPrompt = action.display.content)) }
+                _text.update { action.display.content }
+            }
+
+            is ChatAction.DismissEdit -> {
+                inputState.update { it.copy(editState = null) }
+                _text.update { "" }
             }
         }
     }
 }
+
+private data class InputState(
+    val showingTemplatesCarousel: Boolean = false,
+    val editState: EditState? = null,
+    val selectedTemplate: Template? = null,
+    val selectedModel: OpenAIAPIWrapper.Model = OpenAIAPIWrapper.Model.V3,
+)
+
+data class EditState(
+    val messageId: String,
+    val orgPrompt: String,
+)

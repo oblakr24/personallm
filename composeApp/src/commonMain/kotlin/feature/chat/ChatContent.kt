@@ -1,6 +1,8 @@
 package feature.chat
 
 import alpha
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,8 +16,11 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material.icons.sharp.Settings
@@ -26,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +44,9 @@ import feature.commonui.GenericDialog
 import feature.commonui.InputBar
 import feature.commonui.MessageDisplay
 import feature.commonui.MessageDisplayData
+import feature.commonui.PrimaryTextButton
+import feature.commonui.TemplateCardDisplay
+import feature.commonui.TemplateDisplay
 import feature.commonui.TemplateDisplayData
 import feature.commonui.TitledScaffold
 import feature.commonui.rememberGenericDialogState
@@ -48,12 +57,17 @@ data class ChatContentUIState(
     val messages: List<MessageDisplayData> = emptyList(),
     val models: List<ModelDisplay> = emptyList(),
     val templates: List<TemplateDisplayData> = emptyList(),
+    val showTemplatesCarousel: Boolean = false,
+    val inEditState: Boolean,
+    val sendEnabled: Boolean,
     val selectedTemplateId: String? = null,
+    val focusToInput: Boolean = false,
     val selectedModel: String = "",
 ) {
     data class ModelDisplay(val value: String, val name: String, val selected: Boolean)
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChatContent(
     state: ChatContentUIState,
@@ -103,7 +117,11 @@ fun ChatContent(
             }
         }, actions = {
             IconButton(onClick = {
-                templateSelectionDialogState.open()
+                if (state.templates.isEmpty()) {
+                    onAction(ChatAction.ShowNoTemplatesMessage)
+                } else {
+                    templateSelectionDialogState.open()
+                }
             }, content = {
                 Icon(
                     imageVector = Icons.Outlined.Settings,
@@ -132,14 +150,83 @@ fun ChatContent(
                         MessageDisplay(
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
                             data = item,
+                            onEditClicked = {
+                                onAction(ChatAction.EditClicked(item))
+                            }, onDeleteClicked = {
+                                onAction(ChatAction.DeleteClicked(item))
+                            }
                         )
                     })
             }
+
+            if (state.showTemplatesCarousel && state.templates.isNotEmpty()) {
+                val pagerState = rememberPagerState(pageCount = { state.templates.size })
+                Column(
+                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)
+                        .background(MaterialTheme.colorScheme.onBackground.alpha(0.3f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Try a template:",
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        PrimaryTextButton("Dismiss", small = true, onClick = {
+                            onAction(ChatAction.DismissTemplates)
+                        })
+                    }
+
+                    HorizontalPager(
+                        state = pagerState, modifier = Modifier.fillMaxWidth()
+                    ) { pageIdx ->
+                        val templateData = state.templates[pageIdx]
+                        TemplateCardDisplay(templateData, onClick = {
+                            onAction(ChatAction.TemplateSelected(it))
+                        }, modifier = Modifier)
+                    }
+                }
+            }
+            if (state.inEditState) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)
+                        .background(MaterialTheme.colorScheme.onBackground.alpha(0.3f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Edit,
+                            contentDescription = "Icon",
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer.alpha(0.6f),
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            "Editing message",
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        PrimaryTextButton("Dismiss", small = true, onClick = {
+                            onAction(ChatAction.DismissEdit)
+                        })
+                    }
+                }
+            }
         }, footer = {
-            Row(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+            Row(
+                modifier = Modifier.fillMaxWidth().wrapContentHeight()
+                    .background(MaterialTheme.colorScheme.primaryContainer.alpha(0.5f))
+            ) {
                 InputBar(
                     input = text,
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 16.dp, vertical = 12.dp),
+                    focusToInput = state.focusToInput,
+                    sendEnabled = state.sendEnabled,
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight()
+                        .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 16.dp),
                     onChange = {
                         onAction(ChatAction.TextChanged(it))
                     },

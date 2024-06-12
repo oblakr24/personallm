@@ -36,6 +36,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun InputBar(
     input: String,
     focusToInput: Boolean = false,
+    sendEnabled: Boolean = true,
     modifier: Modifier = Modifier,
     keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current,
     onSend: (String) -> Unit,
@@ -81,7 +82,7 @@ fun InputBar(
                     .focusRequester(focusRequester)
             )
 
-            if (input.isNotBlank()) {
+            if (input.isNotBlank() && sendEnabled) {
                 IconButton(
                     onClick = {
                         keyboardController?.hide()
@@ -91,7 +92,7 @@ fun InputBar(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Send,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        contentDescription = "Clear input"
+                        contentDescription = "Send"
                     )
                 }
             }
