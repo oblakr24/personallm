@@ -65,8 +65,13 @@ class ChatRepo(
         return current.id
     }
 
-    suspend fun delete() {
-        // TODO
+    suspend fun delete(chatId: String, messageId: String) {
+        scope.launch {
+            val messages = db.chatMessages(chatId).firstOrNull().orEmpty()
+            val orgMessage = messages.first { it.id == messageId }.toDomain()
+            db.deleteChatMessage(orgMessage.id)
+            db.deleteChatMessagesAfter(timestamp = orgMessage.timestamp)
+        }
     }
 
     // TODO: From user

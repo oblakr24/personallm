@@ -198,8 +198,8 @@ class ChatComponent(
 
             is ChatAction.DeleteClicked -> {
                 scope.launch {
-                    // TODO: Finalize
-                    repo.delete()
+                    val existingChatId = chatId.value ?: return@launch
+                    repo.delete(chatId = existingChatId, messageId = action.display.id)
                 }
             }
 

@@ -17,24 +17,15 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -79,8 +70,15 @@ fun MessageDisplay(data: MessageDisplayData, onEditClicked: () -> Unit, onDelete
                     GenericDropdownMenuItem("Edit", Icons.Outlined.Edit) {
                         onEditClicked()
                     }
-                    GenericDropdownMenuItem("Delete", Icons.Outlined.Delete) {
+                    val deleteDialogState = rememberGenericAlertDialogState<Unit>(onConfirm = {
                         onDeleteClicked()
+                    })
+                    GenericAlertDialog(deleteDialogState)
+                    GenericDropdownMenuItem("Delete", Icons.Outlined.Delete) {
+                        deleteDialogState.open(DialogData(
+                            title = "Delete message",
+                            subtitle = "Are you sure?",
+                        ), Unit)
                     }
                 }
 
