@@ -10,11 +10,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.get
 import kotlinx.cinterop.reinterpret
 import org.jetbrains.skia.Image
-import platform.UIKit.UIAlertController
-import platform.UIKit.UIAlertControllerStyleAlert
-import platform.UIKit.UIAlertViewStyleDefault
 import platform.UIKit.UIApplication
-import platform.UIKit.UIDevice
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
 import platform.UIKit.UIImagePickerController
@@ -24,7 +20,6 @@ import platform.UIKit.UIImagePickerControllerEditedImage
 import platform.UIKit.UIImagePickerControllerOriginalImage
 import platform.UIKit.UIImagePickerControllerSourceType
 import platform.UIKit.UINavigationControllerDelegateProtocol
-import platform.UIKit.UIUserInterfaceIdiomPhone
 import platform.darwin.NSObject
 
 // CameraManager.ios.kt
@@ -96,6 +91,6 @@ actual class SharedImage(private val image: UIImage?) {
     }
 
     private companion object {
-        const val COMPRESSION_QUALITY = 0.99
+        const val COMPRESSION_QUALITY = 0.80
     }
 }

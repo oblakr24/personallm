@@ -9,9 +9,9 @@ object BitmapUtils {
         val inputStream: InputStream?
         try {
             inputStream = contentResolver.openInputStream(uri)
-            val s = BitmapFactory.decodeStream(inputStream)
+            val bitmap = BitmapFactory.decodeStream(inputStream)
             inputStream?.close()
-            return s
+            return bitmap
         } catch (e: Exception) {
             e.printStackTrace()
             return null

@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -56,7 +57,7 @@ class ComposeFileProvider : FileProvider(R.xml.provider_paths) {
     companion object {
         fun getImageUri(context: Context): Uri {
             val tempFile = File.createTempFile(
-                "picture_${System.currentTimeMillis()}", ".png", context.cacheDir
+                "picture_${System.currentTimeMillis()}", ".jpg", context.cacheDir
             ).apply {
                 createNewFile()
             }
@@ -75,7 +76,7 @@ actual class SharedImage(private val bitmap: android.graphics.Bitmap?) {
         return if (bitmap != null) {
             val byteArrayOutputStream = ByteArrayOutputStream()
             @Suppress("MagicNumber") bitmap.compress(
-                android.graphics.Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream
+                android.graphics.Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream
             )
             byteArrayOutputStream.toByteArray()
         } else {

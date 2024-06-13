@@ -16,6 +16,12 @@ sealed interface OpResult<out T : Any?, out E : RootError> {
         is Error -> this as OpResult<R, E>
     }
 
+    @Suppress("UNCHECKED_CAST")
+    fun <R : Any, E: RootError> flatMapNullable(mapper: (T) -> OpResult<R, E>?): OpResult<R, E>? = when (this) {
+        is Done -> mapper(data)
+        is Error -> this as OpResult<R, E>
+    }
+
     fun optValue() = when (this) {
         is Done -> data
         is Error -> null

@@ -6,11 +6,13 @@ import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.utils.io.readUTF8Line
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.runningFold
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
 import util.OpResult
@@ -27,28 +29,30 @@ class OpenAIAPIWrapper(
     enum class Model(val value: String) {
         V3("gpt-3.5-turbo"),
         V4("gpt-4.0-turbo"),
-        V4_VISION_PREVIEW("gpt-4-vision-preview");
+        V4_O("gpt-4o");
 
         fun displayName() = value.split("_").joinToString(separator = " ") { it.capitalized() }
     }
 
     suspend fun getChatCompletions(
         prompt: String,
+        imageEncoded: String?,
         prevMessages: List<ChatCompletionsRequestBody.Message> = emptyList(),
         model: Model,
     ): Flow<NetworkResponse<WrappedCompletionResponse>> {
-        val body = ChatCompletionsRequestBody(
-            model = model.value,
-            messages = prevMessages + listOf(
-                ChatCompletionsRequestBody.Message(
-                    role = ROLE_USER,
-                    content = listOf(
-                        ChatCompletionsRequestBody.MessageItem(
-                            text = prompt,
-                        )
-                    ),
+        val newMessage = imageEncoded?.let {
+            createImageMessage(it, prompt)
+        } ?: ChatCompletionsRequestBody.Message(
+            role = ROLE_USER,
+            content = listOf(
+                ChatCompletionsRequestBody.MessageItem(
+                    text = prompt,
                 )
             ),
+        )
+        val body = ChatCompletionsRequestBody(
+            model = if (imageEncoded != null) Model.V4_O.value else model.value,
+            messages = prevMessages + newMessage,
             stream = true,
         )
         return streamCompletions(body)
@@ -83,28 +87,33 @@ class OpenAIAPIWrapper(
     suspend fun getImageCompletions(
         prompt: String,
         imageEncoded: String,
-        model: Model = Model.V4_VISION_PREVIEW,
+        model: Model = Model.V4_O,
     ): Flow<NetworkResponse<WrappedCompletionResponse>> {
         val body = ChatCompletionsRequestBody(
             model = model.value,
             messages = listOf(
-                ChatCompletionsRequestBody.Message(
-                    role = "user",
-                    content = listOf(
-                        ChatCompletionsRequestBody.MessageItem(
-                            text = prompt,
-                        ),
-                        ChatCompletionsRequestBody.MessageItem(
-                            type = ChatCompletionsRequestBody.MessageItem.TYPE_IMAGE_URL,
-                            image_url = "data:image/jpeg;base64,$imageEncoded",
-                        ),
-                    ),
-                )
+                createImageMessage(imageEncoded, prompt)
             ),
             stream = true,
         )
         return streamCompletions(body)
     }
+
+    private fun createImageMessage(prompt: String, imageEncoded: String) =
+        ChatCompletionsRequestBody.Message(
+            role = "user",
+            content = listOf(
+                ChatCompletionsRequestBody.MessageItem(
+                    text = prompt,
+                ),
+                ChatCompletionsRequestBody.MessageItem(
+                    type = ChatCompletionsRequestBody.MessageItem.TYPE_IMAGE_URL,
+                    image_url = ChatCompletionsRequestBody.MessageItem.ImageUrl(
+                        url =  "data:image/jpeg;base64,$imageEncoded"
+                    )
+                ),
+            ),
+        )
 
     private fun bearerTokenHeader() = OpenAIAPI.BEARER_TOKEN_PREFIX + " ${secretsProvider.openAIApiKey()}"
 
@@ -134,16 +143,37 @@ class OpenAIAPIWrapper(
         }
 
     private fun Flow<NetworkResponse<String>>.parseToResponse(): Flow<NetworkResponse<ChatCompletionResponse>> {
-        return this.mapNotNull {
-            it.flatMap { jsonString ->
+        val partialResponse = StringBuilder()
+        val emissions = this.mapNotNull {
+            it.flatMapNullable { jsonString ->
                 try {
-                    val trimmed = jsonString.substringAfter("data: ")
-                    val decoded = json.decodeFromString<ChatCompletionResponse>(trimmed)
-                    NetworkResp.success(decoded)
+                    if (jsonString.contains("data:")) {
+                        val trimmed = jsonString.substringAfter("data: ")
+                        val decoded = json.decodeFromString<ChatCompletionResponse>(trimmed)
+                        NetworkResp.success(decoded)
+                    } else {
+                        partialResponse.append(jsonString)
+                        null
+                    }
                 } catch (e: Throwable) {
                     println("Could not parse: $jsonString because of ${e.message}")
                     NetworkResp.error(NetworkError.Error(e))
                 }
+            }
+        }
+        return flow {
+            emitAll(emissions)
+            if (partialResponse.isNotBlank()) {
+                val body = partialResponse.toString()
+                val errorResponse = try {
+                    val error = json.decodeFromString<ApiErrors>(body)
+                    println("Error from api: ${error.error?.message}, code: ${error.error?.code}")
+                    NetworkResp.error(NetworkError.NotSuccessful(body = error.error?.message  ?: "Error", code = 400))
+                } catch (e: Throwable) {
+                    println("Could not parse: $body because of ${e.message}")
+                    NetworkResp.error(NetworkError.Error(e))
+                }
+                emit(errorResponse)
             }
         }
     }
@@ -173,3 +203,16 @@ class OpenAIAPIWrapper(
         val response: ChatCompletionResponse? = null,
     )
 }
+
+@Serializable
+private data class ApiErrors(
+    val error: ApiErrorResponse?
+)
+
+@Serializable
+private data class ApiErrorResponse(
+    val message: String,
+    val type: String?,
+    val param: String?,
+    val code: String?,
+)

@@ -78,6 +78,7 @@ data class ChatCompletionsRequestBody(
     val model: String,
     val stream: Boolean,
     val temperature: Float = 0.7f,
+    val max_tokens: Int = 1000,
 ) {
     @Serializable
     data class Message(
@@ -89,8 +90,15 @@ data class ChatCompletionsRequestBody(
     data class MessageItem(
         val type: String = TYPE_TEXT,
         val text: String? = null,
-        val image_url: String? = null,
+        val image_url: ImageUrl? = null,
+//        val image_url: String? = null,
     ) {
+
+        @Serializable
+        data class ImageUrl(
+            val url: String,
+            val detail: String = "low",
+        )
 
         companion object {
             const val TYPE_TEXT = "text"
