@@ -7,6 +7,7 @@ import data.ChatCompletionsRequestBody.MessageItem.Companion.ROLE_USER
 import data.OpenAIAPIWrapper
 import db.AppDatabase
 import di.Singleton
+import feature.camera.SharedImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -20,7 +21,10 @@ import me.tatarka.inject.annotations.Inject
 import personallm.data.ChatEntity
 import personallm.data.ChatMessageEntity
 import util.randomUUID
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
+@OptIn(ExperimentalEncodingApi::class)
 @Singleton
 @Inject
 class ChatRepo(
@@ -33,6 +37,7 @@ class ChatRepo(
     suspend fun submitNew(
         orgChatId: String?,
         prompt: String,
+        image: SharedImage?,
         model: OpenAIAPIWrapper.Model,
         template: Template?
     ): String {
@@ -59,6 +64,7 @@ class ChatRepo(
             model = model,
             orgMessage = null,
             prompt = prompt,
+            image = image,
             prevMessages = current.prevMessages,
             template = template,
         )
@@ -75,7 +81,7 @@ class ChatRepo(
     }
 
     // TODO: From user
-    suspend fun edit(chatId: String, messageId: String, newPrompt: String, isFromUser: Boolean, model: OpenAIAPIWrapper.Model, template: Template?) {
+    suspend fun edit(chatId: String, messageId: String, newPrompt: String,  image: SharedImage?, isFromUser: Boolean, model: OpenAIAPIWrapper.Model, template: Template?) {
         val messages = db.chatMessages(chatId).firstOrNull().orEmpty()
         val orgMessage = messages.first { it.id == messageId }
         val prevMessages = messages.filter { it.timestamp < orgMessage.timestamp }.map { it.toDomain() }
@@ -85,6 +91,7 @@ class ChatRepo(
             model = model,
             orgMessage = orgMessage.toDomain(),
             prompt = newPrompt,
+            image = image,
             prevMessages = prevMessages,
             template = template,
         )
@@ -114,6 +121,7 @@ class ChatRepo(
         chatId: String,
         orgMessage: ChatMessage?,
         prompt: String,
+        image: SharedImage?,
         prevMessages: List<ChatMessage>,
         model: OpenAIAPIWrapper.Model,
         template: Template?
@@ -150,10 +158,15 @@ class ChatRepo(
                     content = listOf(ChatCompletionsRequestBody.MessageItem(text = it.content))
                 )
             }
+
+            val imageEncoded = image?.toByteArray()?.let { byteArray ->
+                Base64.encode(byteArray)
+            }
+
             api.getChatCompletions(
                 prompt = prompt,
                 prevMessages = systemMsg + prevMsgs,
-                model = model
+                model = model, imageEncoded = imageEncoded,
             ).collect { resp ->
                 resp.doOnError {
                     signaling.handleGenericError(it)

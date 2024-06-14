@@ -2,6 +2,7 @@ package feature.chat
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.graphics.ImageBitmap
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.launchMolecule
 import data.OpenAIAPIWrapper
@@ -13,6 +14,7 @@ import data.repo.Template
 import data.repo.TemplatesRepo
 import di.VMContext
 import di.vmScope
+import feature.camera.SharedImage
 import feature.commonui.CommonUIMappers.toDisplay
 import feature.commonui.MessageDisplayData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,6 +26,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
@@ -70,6 +73,8 @@ class ChatComponent(
         if (id == null) emptyFlow() else chat.mapNotNull { c -> c.summary.takeIf { it.isNotBlank() } }
     }
 
+    private val imageBitmap = inputState.map { it.attachedImage?.toImageBitmap() }.shareIn(scope, SharingStarted.Lazily)
+
     init {
         scope.launch {
             val templateId= if (config.chatId != null) chat.firstOrNull()?.templateId else null
@@ -77,7 +82,7 @@ class ChatComponent(
             if (initialTemplate != null) {
                 inputState.update { it.copy(selectedTemplate = initialTemplate) }
             } else {
-                inputState.update { it.copy(showingTemplatesCarousel = true) }
+                inputState.update { it.copy(showingTemplatesCarousel = config.chatId == null) }
             }
         }
     }
@@ -90,6 +95,7 @@ class ChatComponent(
                 titleFlow = title,
                 templatesFlow = templates,
                 inputStateFlow = inputState,
+                imageBitmapFlow = imageBitmap,
             )
         }
     }
@@ -103,12 +109,14 @@ class ChatComponent(
         titleFlow: Flow<String>,
         templatesFlow: Flow<List<Template>>,
         inputStateFlow: StateFlow<InputState>,
+        imageBitmapFlow: Flow<ImageBitmap?>,
     ): ChatContentUIState {
         val prompt = promptFlow.collectAsState().value
         val repoMessages = messageFlow.collectAsState(initial = null).value
         val templates = templatesFlow.collectAsState(emptyList()).value
         val title = titleFlow.collectAsState(null).value ?: "New Chat"
         val inputState = inputStateFlow.collectAsState().value
+        val imageBitmap = imageBitmapFlow.collectAsState(null).value
 
         val messages = repoMessages?.map {
             MessageDisplayData(
@@ -150,6 +158,8 @@ class ChatComponent(
             showTemplatesCarousel = inputState.showingTemplatesCarousel && inputState.selectedTemplate == null,
             inEditState = inputState.editState != null,
             sendEnabled = sendEnabled,
+            attachedImage = imageBitmap,
+            inputExpanded = inputState.expanded
         )
     }
 
@@ -163,12 +173,13 @@ class ChatComponent(
                 val model = currInput.selectedModel
                 val template = currInput.selectedTemplate
                 val existingChatId = chatId.value
+                val image = currInput.attachedImage
                 scope.launch {
                     if (editState != null && existingChatId != null) {
-                        repo.edit(chatId = existingChatId, messageId = editState.messageId, newPrompt = prompt, model = model, isFromUser = true, template = template)
+                        repo.edit(chatId = existingChatId, messageId = editState.messageId, newPrompt = prompt, image = image, model = model, isFromUser = true, template = template)
                         inputState.update { it.copy(editState = null) }
                     } else {
-                        val newChatId = repo.submitNew(existingChatId, prompt = prompt, model = model, template = template)
+                        val newChatId = repo.submitNew(existingChatId, prompt = prompt, image = image, model = model, template = template)
                         chatId.value = newChatId
                     }
                 }
@@ -212,6 +223,22 @@ class ChatComponent(
                 inputState.update { it.copy(editState = null) }
                 _text.update { "" }
             }
+
+            is ChatAction.OnImageResultReceived -> {
+                inputState.update { it.copy(attachedImage = action.image) }
+            }
+
+            ChatAction.OpenExpandedInput -> {
+                inputState.update { it.copy(expanded = true, showingTemplatesCarousel = false) }
+            }
+
+            ChatAction.DismissExpandedInput -> {
+                inputState.update { it.copy(expanded = false, attachedImage = null) }
+            }
+
+            ChatAction.RemoveImage -> {
+                inputState.update { it.copy(attachedImage = null) }
+            }
         }
     }
 }
@@ -219,6 +246,8 @@ class ChatComponent(
 private data class InputState(
     val showingTemplatesCarousel: Boolean = false,
     val editState: EditState? = null,
+    val expanded: Boolean = false,
+    val attachedImage: SharedImage? = null,
     val selectedTemplate: Template? = null,
     val selectedModel: OpenAIAPIWrapper.Model = OpenAIAPIWrapper.Model.V3,
 )
