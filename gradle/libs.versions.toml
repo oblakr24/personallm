@@ -17,8 +17,8 @@ compose-plugin = "1.6.11"
 uiToolingPreviewDesktop = "1.6.8"
 
 datastore = "1.1.1"
-decompose = "3.0.0"
-essenty = "2.0.0"
+decompose = "3.1.0"
+essenty = "2.1.0"
 
 # Kotlin
 kotlin = "2.0.0"
