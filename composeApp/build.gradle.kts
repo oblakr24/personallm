@@ -280,9 +280,9 @@ val KEY_NAME = "OPENAI_API_KEY"
 val openAiKey: String = localProps.getProperty(KEY_NAME, "")
 
 tasks.register("generateBuildConfig") {
-    if (openAiKey.isBlank()) {
-        throw IllegalArgumentException("$KEY_NAME is missing from local.properties")
-    }
+//    if (openAiKey.isBlank()) {
+//        throw IllegalArgumentException("$KEY_NAME is missing from local.properties")
+//    }
 
     doLast {
         val fileContent = """
