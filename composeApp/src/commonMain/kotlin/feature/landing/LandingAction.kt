@@ -9,6 +9,5 @@ sealed interface LandingAction {
     data object OpenChat : LandingAction
     data object FAQClicked : LandingAction
     data class SetDarkMode(val new: DarkModeState) : LandingAction
-    data object SetDarkModeFollowsSystem : LandingAction
     data object OpenRepoUrl : LandingAction
 }

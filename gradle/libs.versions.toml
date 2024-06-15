@@ -12,8 +12,10 @@ androidx-activityCompose = "1.9.0"
 #androidx-test-junit = "1.1.5"
 
 # Compose
+coil = "3.0.0-alpha01"
 composeTooling = "1.6.8"
 compose-plugin = "1.6.11"
+constraintlayoutComposeMultiplatform = "0.3.1"
 uiToolingPreviewDesktop = "1.6.8"
 
 datastore = "1.1.1"
@@ -25,12 +27,15 @@ kotlin = "2.0.0"
 ksp = '2.0.0-1.0.21'
 molecule = "2.0.0"
 
+multiplatformSettings = "1.1.1"
 coroutines = "1.8.1"
 kotlinxDatetime = "0.6.0"
 kotlinxSerializationJson = "1.7.0-RC"
 
 ktorfit = "2.0.0"
 ktor = "2.3.11"
+
+napier = "2.7.1"
 
 sqldelight = "2.0.2"
 
@@ -42,8 +47,14 @@ kotlinInject = '0.7.1'
 
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
 
+coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
+coil-compose-core = { module = "io.coil-kt.coil3:coil-compose-core", version.ref = "coil" }
+constraintlayout-compose-multiplatform = { module = "tech.annexflow.compose:constraintlayout-compose-multiplatform", version.ref = "constraintlayoutComposeMultiplatform" }
 coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
 android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqldelight" }
+multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
+multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "multiplatformSettings" }
+napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "sqldelight" }
 sqlite-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
 

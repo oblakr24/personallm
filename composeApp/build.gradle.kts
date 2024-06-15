@@ -62,7 +62,7 @@ kotlin {
         }
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
-            isStatic = false // todo: try this with true when the issue with SQLDelight is solved
+            isStatic = false // todo: try this with true when the issue with SQLDelight is solved: https://github.com/cashapp/sqldelight/issues/5007
 
             export(libs.arkivanov.decompose)
             export(libs.arkivanov.essenty.lifecycle)
@@ -102,19 +102,21 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.components.uiToolingPreview)
 
+            // CMP resources
             implementation(compose.components.resources)
 
-            implementation("com.russhwolf:multiplatform-settings:1.1.1")
-            implementation("com.russhwolf:multiplatform-settings-coroutines:1.1.1")
+            // Multiplatform settings
+            implementation(libs.multiplatform.settings)
+            implementation(libs.multiplatform.settings.coroutines)
 
-            implementation("tech.annexflow.compose:constraintlayout-compose-multiplatform:0.3.1")
+            implementation(libs.constraintlayout.compose.multiplatform)
 
-            val napier = "2.7.1"
-            implementation("io.github.aakira:napier:$napier")
+            // Napier
+            implementation(libs.napier)
 
-            val coil = "3.0.0-alpha01"
-            implementation("io.coil-kt.coil3:coil:$coil")
-            implementation("io.coil-kt.coil3:coil-compose-core:$coil")
+            // Coil
+            implementation(libs.coil)
+            implementation(libs.coil.compose.core)
 
             // Coroutines
             implementation(libs.kotlinx.coroutines.core)

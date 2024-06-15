@@ -76,10 +76,6 @@ class LandingComponent(
             is LandingAction.SetDarkMode -> scope.launch {
                 darkModeToggleUseCase.setDarkMode(action.new)
             }
-
-            LandingAction.SetDarkModeFollowsSystem -> scope.launch {
-                darkModeToggleUseCase.setDarkMode(DarkModeState.FOLLOW_SYSTEM)
-            }
         }
     }
 }
