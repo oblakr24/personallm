@@ -12,7 +12,7 @@ import UIKit
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     
-       let diComponent: AppComponent = InjectAppComponent()
+       let diComponent: AppComponent = App_iosKt.createAppComponent()
        var root: RootComponent!
        var backDispatcher: BackDispatcher!
 

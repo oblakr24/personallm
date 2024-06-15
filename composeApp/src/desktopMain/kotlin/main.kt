@@ -5,16 +5,15 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import data.AppStorage
-import di.AppComponent
 import di.PlatformProviders
-import di.create
+import di.createAppComponent
 import navigation.DefaultRootComponent
 import javax.swing.SwingUtilities
 
 fun main() {
     val platformProviders = PlatformProviders()
     val appStorage = AppStorage(platformProviders.settingsFactory())
-    val appComponent = AppComponent::class.create().apply {
+    val appComponent = createAppComponent().apply {
         this.platformProviders = platformProviders
         this.appStorage = appStorage
     }

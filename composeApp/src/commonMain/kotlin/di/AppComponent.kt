@@ -8,6 +8,7 @@ import data.OpResultResponseConverterFactory
 import data.OpenAIAPI
 import data.StorageProvider
 import data.StorageProviderImpl
+import data.createOpenAIAPI
 import db.createDatabase
 import de.jensklingenberg.ktorfit.Ktorfit
 import feature.addtemplate.AddTemplateComponent
@@ -29,6 +30,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Component
+import me.tatarka.inject.annotations.KmpComponentCreate
 import me.tatarka.inject.annotations.Provides
 import navigation.DefaultRootComponent
 import navigation.IntentHandler
@@ -139,7 +141,10 @@ abstract class AppComponent {
             .baseUrl("https://api.openai.com/")
             .converterFactories(OpResultResponseConverterFactory())
             .build()
-        val api = ktorfit.create<OpenAIAPI>()
+        val api = ktorfit.createOpenAIAPI()
         return api
     }
 }
+
+@KmpComponentCreate
+expect fun createAppComponent(): AppComponent

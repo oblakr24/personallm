@@ -19,6 +19,8 @@ import com.arkivanov.essenty.lifecycle.Lifecycle
 
 fun createBackDispatcher(): BackDispatcher = BackDispatcher()
 
+fun createAppComponent() = di.createAppComponent()
+
 fun customDefaultComponentContext(
     backDispatcher: BackDispatcher,
     lifecycle: Lifecycle

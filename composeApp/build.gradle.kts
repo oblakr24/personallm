@@ -81,6 +81,7 @@ kotlin {
             api(libs.arkivanov.decompose)
             api(libs.arkivanov.essenty.lifecycle)
             implementation(libs.native.driver)
+            implementation(libs.kotlinInject.runtime.kmp)
         }
         androidMain.dependencies {
             implementation(libs.compose.ui.tooling.preview)
@@ -90,6 +91,7 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.sqlite.driver)
+            implementation(libs.kotlinInject.runtime.kmp)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -99,8 +101,6 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.material3)
             implementation(compose.components.uiToolingPreview)
-
-            implementation(libs.kotlinInject.runtime)
 
             implementation(compose.components.resources)
 
@@ -248,7 +248,7 @@ dependencies {
         add("kspIosSimulatorArm64Test", this)
     }
 
-    implementation(libs.kotlinInject.runtime)
+    implementation(libs.kotlinInject.runtime.kmp)
     ksp(libs.kotlinInject.compiler)
 }
 
