@@ -5,7 +5,7 @@ import data.AppStorage
 import di.AppComponent
 import di.CurrentActivityProvider
 import di.PlatformProviders
-import di.create
+import di.createAppComponent
 
 class AndroidApp : Application() {
 
@@ -21,7 +21,7 @@ class AndroidApp : Application() {
 
         val appStorage = AppStorage(platformProviders.settingsFactory())
 
-        appComponent = AppComponent::class.create().apply {
+        appComponent = createAppComponent().apply {
             this.platformProviders = PlatformProviders(applicationContext, activityProvider)
             this.appStorage = appStorage
         }

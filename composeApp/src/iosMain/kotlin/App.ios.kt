@@ -16,10 +16,21 @@ import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimator
 import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.lifecycle.Lifecycle
+import data.AppStorage
+import di.AppComponent
+import di.PlatformProviders
 
 fun createBackDispatcher(): BackDispatcher = BackDispatcher()
 
-fun createAppComponent() = di.createAppComponent()
+fun createAppComponent(): AppComponent {
+    val platformProviders = PlatformProviders()
+    val appStorage = AppStorage(platformProviders.settingsFactory())
+    return di.createAppComponent().apply {
+        this.platformProviders = platformProviders
+        this.appStorage = appStorage
+
+    }
+}
 
 fun customDefaultComponentContext(
     backDispatcher: BackDispatcher,

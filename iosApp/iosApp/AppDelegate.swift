@@ -17,12 +17,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
        var backDispatcher: BackDispatcher!
 
        override init() {
-           let platformProviders = PlatformProviders()
-           diComponent.platformProviders = platformProviders
-           
-           let appStorage = AppStorage(factory: platformProviders.settingsFactory())
-           diComponent.appStorage = appStorage
-           
            super.init()
            backDispatcher = App_iosKt.createBackDispatcher()
 
