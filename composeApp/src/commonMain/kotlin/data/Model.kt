@@ -13,5 +13,9 @@ sealed interface Models {
         V4_O("gpt-4o");
     }
 
+    enum class Anthropic(override val value: String): IModel {
+        CLAUDE_3_HAIKU("claude-3-haiku-20240307")
+    }
+
 }
 fun IModel.displayName() = value.split("_").joinToString(separator = " ") { it.capitalized() }

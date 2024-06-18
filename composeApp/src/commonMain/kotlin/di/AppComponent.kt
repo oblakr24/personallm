@@ -10,6 +10,8 @@ import data.OpResultResponseConverterFactory
 import data.openai.OpenAIAPI
 import data.StorageProvider
 import data.StorageProviderImpl
+import data.anthropic.AnthropicAPI
+import data.anthropic.createAnthropicAPI
 import data.openai.createOpenAIAPI
 import db.createDatabase
 import de.jensklingenberg.ktorfit.Ktorfit
@@ -147,6 +149,18 @@ abstract class AppComponent {
             .converterFactories(OpResultResponseConverterFactory())
             .build()
         val api = ktorfit.createOpenAIAPI()
+        return api
+    }
+
+    @Provides
+    @Singleton
+    fun anthropicAPI(client: HttpClient): AnthropicAPI {
+        val ktorfit = Ktorfit.Builder()
+            .httpClient(client)
+            .baseUrl("https://api.anthropic.com/")
+            .converterFactories(OpResultResponseConverterFactory())
+            .build()
+        val api = ktorfit.createAnthropicAPI()
         return api
     }
 }

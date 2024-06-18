@@ -18,7 +18,7 @@ interface OpenAIAPI {
     suspend fun getChatCompletions(
         @Header("Authorization") bearerToken: String,
         @Body body: OpenAIChatCompletionsRequestBody
-    ): OpResult<ChatCompletionResponse, NetworkError>
+    ): OpResult<OpenAIChatCompletionResponse, NetworkError>
 
     @Headers("Content-Type: application/json")
     @POST("v1/chat/completions")
@@ -36,11 +36,11 @@ interface OpenAIAPI {
 
 data class OpenAIWrappedCompletionResponse(
     val message: String,
-    val response: ChatCompletionResponse,
+    val response: OpenAIChatCompletionResponse,
 )
 
 @Serializable
-data class ChatCompletionResponse(
+data class OpenAIChatCompletionResponse(
     val id: String,
     val created: Long,
     val model: String,

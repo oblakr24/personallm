@@ -10,6 +10,8 @@ import data.NetworkResponse
 import data.SecretsProvider
 import data.WrappedCompletionResponse
 import data.openai.OpenAIChatCompletionsRequestBody.MessageItem.Companion.ROLE_USER
+import data.parseToResponse
+import data.toStreamingFlow
 import di.Singleton
 import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsChannel
@@ -159,69 +161,27 @@ class OpenAIAPIWrapper(
             }
         }
 
-    private fun Flow<NetworkResponse<String>>.parseToResponse(): Flow<NetworkResponse<ChatCompletionResponse>> {
-        val partialResponse = StringBuilder()
-        val emissions = this.mapNotNull {
-            it.flatMapNullable { jsonString ->
-                try {
-                    if (jsonString.contains("data:")) {
-                        val trimmed = jsonString.substringAfter("data: ")
-                        val decoded = json.decodeFromString<ChatCompletionResponse>(trimmed)
-                        NetworkResp.success(decoded)
-                    } else {
-                        partialResponse.append(jsonString)
-                        null
-                    }
-                } catch (e: Throwable) {
-                    println("Could not parse: $jsonString because of ${e.message}")
-                    NetworkResp.error(NetworkError.Error(e))
-                }
+    private fun Flow<NetworkResponse<String>>.parseToResponse(): Flow<NetworkResponse<OpenAIChatCompletionResponse>> = parseToResponse(
+        mapper = { jsonString ->
+            if (jsonString.contains("data:")) {
+                val trimmed = jsonString.substringAfter("data: ")
+                val decoded = json.decodeFromString<OpenAIChatCompletionResponse>(trimmed)
+                decoded
+            } else {
+                null
             }
+        },
+        errorMapper = { body ->
+            val error = json.decodeFromString<ApiErrors>(body)
+            NetworkError.NotSuccessful(
+                body = error.error?.message ?: "Error", code = 400
+            )
         }
-        return flow {
-            emitAll(emissions)
-            if (partialResponse.isNotBlank()) {
-                val body = partialResponse.toString()
-                val errorResponse = try {
-                    val error = json.decodeFromString<ApiErrors>(body)
-                    println("Error from api: ${error.error?.message}, code: ${error.error?.code}")
-                    NetworkResp.error(
-                        NetworkError.NotSuccessful(
-                            body = error.error?.message ?: "Error", code = 400
-                        )
-                    )
-                } catch (e: Throwable) {
-                    println("Could not parse: $body because of ${e.message}")
-                    NetworkResp.error(NetworkError.Error(e))
-                }
-                emit(errorResponse)
-            }
-        }
-    }
-
-    private fun HttpStatement.toStreamingFlow(): Flow<NetworkResponse<String>> = flow {
-        execute { httpResponse ->
-            val channel = httpResponse.bodyAsChannel()
-            while (!channel.isClosedForRead) {
-                val line = channel.readUTF8Line()
-                if (!line.isNullOrBlank()) {
-                    if (line.contains("[DONE]")) {
-                        println("Done!")
-                    } else {
-                        emit(NetworkResp.success(line))
-                    }
-                } else if (line == null) {
-                    NetworkResp.error(NetworkError.NoData)
-                } else {
-                    println("Blank line")
-                }
-            }
-        }
-    }
+    )
 
     data class WrappedCompletionResponseInner(
         val message: String = "",
-        val response: ChatCompletionResponse? = null,
+        val response: OpenAIChatCompletionResponse? = null,
     )
 }
 
