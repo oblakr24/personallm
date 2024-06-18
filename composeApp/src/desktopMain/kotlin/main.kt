@@ -4,12 +4,20 @@ import androidx.compose.ui.window.rememberWindowState
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import data.AppStorage
+import di.AppComponent
+import di.PlatformProviders
 import di.createAppComponent
 import navigation.DefaultRootComponent
 import javax.swing.SwingUtilities
 
 fun main() {
-    val appComponent = createAppComponent()
+    val appComponent = createAppComponent().apply {
+        val platformProviders = PlatformProviders()
+        val appStorage = AppStorage(platformProviders.settingsFactory())
+        this.platformProviders = platformProviders
+        this.appStorage = appStorage
+    }
     val lifecycle = LifecycleRegistry()
     val root =
         runOnUiThread {

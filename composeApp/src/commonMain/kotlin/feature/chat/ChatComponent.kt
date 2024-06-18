@@ -5,7 +5,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.ImageBitmap
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.launchMolecule
-import data.OpenAIAPIWrapper
+import data.IModel
+import data.Models
+import data.displayName
+import data.openai.OpenAIAPIWrapper
 import data.repo.Chat
 import data.repo.ChatMessage
 import data.repo.ChatRepo
@@ -128,7 +131,7 @@ class ChatComponent(
                 imageUri = null,
             )
         }.orEmpty()
-        val models = OpenAIAPIWrapper.Model.entries.map {
+        val models = Models.OpenAI.entries.map {
             ChatContentUIState.ModelDisplay(
                 value = it.value,
                 name = it.displayName(),
@@ -189,7 +192,7 @@ class ChatComponent(
             }
 
             is ChatAction.ModelSelected -> {
-                val newModel = OpenAIAPIWrapper.Model.entries.first { it.value == action.display.value }
+                val newModel = Models.OpenAI.entries.first { it.value == action.display.value }
                 inputState.update { it.copy(selectedModel = newModel) }
             }
 
@@ -249,7 +252,7 @@ private data class InputState(
     val expanded: Boolean = false,
     val attachedImage: SharedImage? = null,
     val selectedTemplate: Template? = null,
-    val selectedModel: OpenAIAPIWrapper.Model = OpenAIAPIWrapper.Model.V3,
+    val selectedModel: Models.OpenAI = Models.OpenAI.V3,
 )
 
 data class EditState(

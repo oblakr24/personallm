@@ -1,6 +1,6 @@
 package data.repo
 
-import data.OpenAIAPIWrapper
+import data.openai.OpenAIAPIWrapper
 import db.AppDatabase
 import di.Singleton
 import kotlinx.coroutines.CoroutineScope

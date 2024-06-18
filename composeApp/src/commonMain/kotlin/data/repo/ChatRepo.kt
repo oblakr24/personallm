@@ -1,10 +1,13 @@
 package data.repo
 
-import data.ChatCompletionsRequestBody
-import data.ChatCompletionsRequestBody.MessageItem.Companion.ROLE_ASSISTANT
-import data.ChatCompletionsRequestBody.MessageItem.Companion.ROLE_SYSTEM
-import data.ChatCompletionsRequestBody.MessageItem.Companion.ROLE_USER
-import data.OpenAIAPIWrapper
+import data.CompletionsApi
+import data.IModel
+import data.Message
+import data.Models
+import data.openai.OpenAIChatCompletionsRequestBody
+import data.openai.OpenAIChatCompletionsRequestBody.MessageItem.Companion.ROLE_ASSISTANT
+import data.openai.OpenAIChatCompletionsRequestBody.MessageItem.Companion.ROLE_SYSTEM
+import data.openai.OpenAIChatCompletionsRequestBody.MessageItem.Companion.ROLE_USER
 import db.AppDatabase
 import di.Singleton
 import feature.camera.SharedImage
@@ -28,7 +31,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 @Singleton
 @Inject
 class ChatRepo(
-    private val api: OpenAIAPIWrapper,
+    private val api: CompletionsApi,
     private val db: AppDatabase,
     private val signaling: InAppSignaling,
 ) {
@@ -38,7 +41,7 @@ class ChatRepo(
         orgChatId: String?,
         prompt: String,
         image: SharedImage?,
-        model: OpenAIAPIWrapper.Model,
+        model: IModel,
         template: Template?
     ): String {
         val current = orgChatId?.let { id ->
@@ -81,7 +84,7 @@ class ChatRepo(
     }
 
     // TODO: From user
-    suspend fun edit(chatId: String, messageId: String, newPrompt: String,  image: SharedImage?, isFromUser: Boolean, model: OpenAIAPIWrapper.Model, template: Template?) {
+    suspend fun edit(chatId: String, messageId: String, newPrompt: String, image: SharedImage?, isFromUser: Boolean, model: IModel, template: Template?) {
         val messages = db.chatMessages(chatId).firstOrNull().orEmpty()
         val orgMessage = messages.first { it.id == messageId }
         val prevMessages = messages.filter { it.timestamp < orgMessage.timestamp }.map { it.toDomain() }
@@ -123,7 +126,7 @@ class ChatRepo(
         prompt: String,
         image: SharedImage?,
         prevMessages: List<ChatMessage>,
-        model: OpenAIAPIWrapper.Model,
+        model: IModel,
         template: Template?
     ) {
         val userMessage = orgMessage?.copy(
@@ -146,16 +149,16 @@ class ChatRepo(
         scope.launch {
             val systemMsg = template?.let {
                 listOf(
-                    ChatCompletionsRequestBody.Message(
+                    Message(
                         role = ROLE_SYSTEM,
-                        content = listOf(ChatCompletionsRequestBody.MessageItem(text = it.prompt))
+                        content = listOf(Message.MessageItem(text = it.prompt))
                     )
                 )
             } ?: emptyList()
             val prevMsgs = prevMessages.map {
-                ChatCompletionsRequestBody.Message(
+                Message(
                     role = if (it.fromUser) ROLE_USER else ROLE_ASSISTANT,
-                    content = listOf(ChatCompletionsRequestBody.MessageItem(text = it.content))
+                    content = listOf(Message.MessageItem(text = it.content))
                 )
             }
 
@@ -172,11 +175,11 @@ class ChatRepo(
                     signaling.handleGenericError(it)
                 }.doOnSuccessSusp {
                     val msg = ChatMessage(
-                        id = it.response.id,
+                        id = it.id,
                         content = it.message,
                         fromUser = false,
                         timestamp = Clock.System.now(),
-                        finished = it.response.done(),
+                        finished = it.done,
                     )
                     db.insertChatMessage(msg.toEntity(chatId))
                 }
@@ -189,18 +192,19 @@ class ChatRepo(
     private fun updateSummary(
         chatId: String,
         prompt: String,
-        prevMessages: List<ChatCompletionsRequestBody.Message>
+        prevMessages: List<Message>
     ) {
         // TODO: logic to update it more often?
         if (prevMessages.isNotEmpty()) return
         val msgs = listOf(
-            ChatCompletionsRequestBody.Message(
+            OpenAIChatCompletionsRequestBody.Message(
                 role = ROLE_USER,
-                content = listOf(ChatCompletionsRequestBody.MessageItem(text = prompt))
+                content = listOf(OpenAIChatCompletionsRequestBody.MessageItem(text = prompt))
             )
         )
+        val model = Models.OpenAI.V3
         scope.launch {
-            api.getChatSummary(msgs).doOnError {
+            api.getChatSummary(msgs, model).doOnError {
                 signaling.handleGenericError(it)
             }.doOnSuccessSusp { summary ->
                 db.updateChatSummary(id = chatId, summary = summary)

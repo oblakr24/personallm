@@ -1,5 +1,6 @@
-package data
+package data.openai
 
+import data.NetworkError
 import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.Header
 import de.jensklingenberg.ktorfit.http.Headers
@@ -16,7 +17,7 @@ interface OpenAIAPI {
     @POST("v1/chat/completions")
     suspend fun getChatCompletions(
         @Header("Authorization") bearerToken: String,
-        @Body body: ChatCompletionsRequestBody
+        @Body body: OpenAIChatCompletionsRequestBody
     ): OpResult<ChatCompletionResponse, NetworkError>
 
     @Headers("Content-Type: application/json")
@@ -24,7 +25,7 @@ interface OpenAIAPI {
     @Streaming
     suspend fun getChatCompletionsStreaming(
         @Header("Authorization") bearerToken: String,
-        @Body body: ChatCompletionsRequestBody
+        @Body body: OpenAIChatCompletionsRequestBody
     ): HttpStatement
 
     companion object {
@@ -33,7 +34,7 @@ interface OpenAIAPI {
     }
 }
 
-data class WrappedCompletionResponse(
+data class OpenAIWrappedCompletionResponse(
     val message: String,
     val response: ChatCompletionResponse,
 )
@@ -73,7 +74,7 @@ data class ChatCompletionResponse(
 }
 
 @Serializable
-data class ChatCompletionsRequestBody(
+data class OpenAIChatCompletionsRequestBody(
     val messages: List<Message>,
     val model: String,
     val stream: Boolean,

@@ -1,6 +1,7 @@
 package feature.samplerequest
 
-import data.OpenAIAPIWrapper
+import data.Models
+import data.openai.OpenAIAPIWrapper
 import di.VMContext
 import di.vmScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +36,7 @@ class SampleRequestComponent(
         vmScope.launch {
             _state.update { it.copy(loading = true, response = null) }
             val prompt = "say something funny. do it 5 times."
-            api.getChatCompletions(prompt, imageEncoded = null, model = OpenAIAPIWrapper.Model.V3).collect { value ->
+            api.getChatCompletions(prompt, imageEncoded = null, model = Models.OpenAI.V3).collect { value ->
                 _state.update { it.copy(response = value.optValue()?.message, loading = false) }
             }
         }

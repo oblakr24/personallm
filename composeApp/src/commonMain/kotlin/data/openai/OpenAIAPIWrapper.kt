@@ -1,6 +1,15 @@
-package data
+package data.openai
 
-import data.ChatCompletionsRequestBody.MessageItem.Companion.ROLE_USER
+import data.CompletionsApi
+import data.IModel
+import data.Message
+import data.Models
+import data.NetworkError
+import data.NetworkResp
+import data.NetworkResponse
+import data.SecretsProvider
+import data.WrappedCompletionResponse
+import data.openai.OpenAIChatCompletionsRequestBody.MessageItem.Companion.ROLE_USER
 import di.Singleton
 import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsChannel
@@ -16,7 +25,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
 import util.OpResult
-import util.capitalized
 
 @Singleton
 @Inject
@@ -24,51 +32,60 @@ class OpenAIAPIWrapper(
     private val api: OpenAIAPI,
     private val json: Json,
     private val secretsProvider: SecretsProvider,
-) {
+): CompletionsApi {
 
-    enum class Model(val value: String) {
-        V3("gpt-3.5-turbo"),
-        V4("gpt-4.0-turbo"),
-        V4_O("gpt-4o");
-
-        fun displayName() = value.split("_").joinToString(separator = " ") { it.capitalized() }
-    }
-
-    suspend fun getChatCompletions(
+    override suspend fun getChatCompletions(
         prompt: String,
         imageEncoded: String?,
-        prevMessages: List<ChatCompletionsRequestBody.Message> = emptyList(),
-        model: Model,
+        prevMessages: List<Message>,
+        model: IModel,
     ): Flow<NetworkResponse<WrappedCompletionResponse>> {
         val newMessage = imageEncoded?.let {
             createImageMessage(it, prompt)
-        } ?: ChatCompletionsRequestBody.Message(
+        } ?: OpenAIChatCompletionsRequestBody.Message(
             role = ROLE_USER,
             content = listOf(
-                ChatCompletionsRequestBody.MessageItem(
+                OpenAIChatCompletionsRequestBody.MessageItem(
                     text = prompt,
                 )
             ),
         )
-        val body = ChatCompletionsRequestBody(
-            model = if (imageEncoded != null) Model.V4_O.value else model.value,
-            messages = prevMessages + newMessage,
+        val prevMessagesMapped = prevMessages.map { m ->
+            OpenAIChatCompletionsRequestBody.Message(
+                role = m.role,
+                content = m.content.map { item ->
+                    OpenAIChatCompletionsRequestBody.MessageItem(
+                        type = item.type,
+                        text = item.text,
+                        image_url = item.image_url?.let {
+                            OpenAIChatCompletionsRequestBody.MessageItem.ImageUrl(
+                                url = it.url,
+                                detail = it.detail,
+                            )
+                        },
+                    )
+                }
+            )
+        }
+        val body = OpenAIChatCompletionsRequestBody(
+            model = if (imageEncoded != null) Models.OpenAI.V4_O.value else model.value,
+            messages = prevMessagesMapped + newMessage,
             stream = true,
         )
         return streamCompletions(body)
     }
 
-    suspend fun getChatSummary(
-        prevMessages: List<ChatCompletionsRequestBody.Message>,
-        model: Model = Model.V3,
+    override suspend fun getChatSummary(
+        prevMessages: List<OpenAIChatCompletionsRequestBody.Message>,
+        model: IModel,
     ): NetworkResponse<String> {
-        val body = ChatCompletionsRequestBody(
+        val body = OpenAIChatCompletionsRequestBody(
             model = model.value,
             messages = prevMessages + listOf(
-                ChatCompletionsRequestBody.Message(
+                OpenAIChatCompletionsRequestBody.Message(
                     role = ROLE_USER,
                     content = listOf(
-                        ChatCompletionsRequestBody.MessageItem(
+                        OpenAIChatCompletionsRequestBody.MessageItem(
                             text = "Summarize this conversations in 2-5 words maximum. Only include this summary in your response. Do not include any other messages.",
                         )
                     ),
@@ -84,12 +101,12 @@ class OpenAIAPIWrapper(
         }
     }
 
-    suspend fun getImageCompletions(
+    override suspend fun getImageCompletions(
         prompt: String,
         imageEncoded: String,
-        model: Model = Model.V4_O,
+        model: IModel,
     ): Flow<NetworkResponse<WrappedCompletionResponse>> {
-        val body = ChatCompletionsRequestBody(
+        val body = OpenAIChatCompletionsRequestBody(
             model = model.value,
             messages = listOf(
                 createImageMessage(imageEncoded, prompt)
@@ -100,16 +117,16 @@ class OpenAIAPIWrapper(
     }
 
     private fun createImageMessage(prompt: String, imageEncoded: String) =
-        ChatCompletionsRequestBody.Message(
+        OpenAIChatCompletionsRequestBody.Message(
             role = "user",
             content = listOf(
-                ChatCompletionsRequestBody.MessageItem(
+                OpenAIChatCompletionsRequestBody.MessageItem(
                     text = prompt,
                 ),
-                ChatCompletionsRequestBody.MessageItem(
-                    type = ChatCompletionsRequestBody.MessageItem.TYPE_IMAGE_URL,
-                    image_url = ChatCompletionsRequestBody.MessageItem.ImageUrl(
-                        url =  "data:image/jpeg;base64,$imageEncoded"
+                OpenAIChatCompletionsRequestBody.MessageItem(
+                    type = OpenAIChatCompletionsRequestBody.MessageItem.TYPE_IMAGE_URL,
+                    image_url = OpenAIChatCompletionsRequestBody.MessageItem.ImageUrl(
+                        url = "data:image/jpeg;base64,$imageEncoded"
                     )
                 ),
             ),
@@ -117,14 +134,14 @@ class OpenAIAPIWrapper(
 
     private fun bearerTokenHeader() = OpenAIAPI.BEARER_TOKEN_PREFIX + " ${secretsProvider.openAIApiKey()}"
 
-    private suspend fun streamCompletions(body: ChatCompletionsRequestBody): Flow<NetworkResponse<WrappedCompletionResponse>> =
+    private suspend fun streamCompletions(body: OpenAIChatCompletionsRequestBody): Flow<NetworkResponse<WrappedCompletionResponse>> =
         api.getChatCompletionsStreaming(
             bearerToken = bearerTokenHeader(),
             body = body,
         ).toStreamingFlow().parseToResponse().map { resp ->
             resp.map {
                 val message = it.choices.firstOrNull()?.delta?.content ?: ""
-                WrappedCompletionResponse(message, it)
+                OpenAIWrappedCompletionResponse(message, it)
             }
         }.runningFold(initial = NetworkResp.success(WrappedCompletionResponseInner())) { acc, new ->
             val combined = acc.optValue()?.message + (new.optValue()?.message ?: "")
@@ -138,7 +155,7 @@ class OpenAIAPIWrapper(
             }
         }.map {
             it.map { innerResp ->
-                WrappedCompletionResponse(innerResp.message, innerResp.response!!)
+                WrappedCompletionResponse(innerResp.message, done = innerResp.response!!.done(), id = innerResp.response.id)
             }
         }
 
@@ -168,7 +185,11 @@ class OpenAIAPIWrapper(
                 val errorResponse = try {
                     val error = json.decodeFromString<ApiErrors>(body)
                     println("Error from api: ${error.error?.message}, code: ${error.error?.code}")
-                    NetworkResp.error(NetworkError.NotSuccessful(body = error.error?.message  ?: "Error", code = 400))
+                    NetworkResp.error(
+                        NetworkError.NotSuccessful(
+                            body = error.error?.message ?: "Error", code = 400
+                        )
+                    )
                 } catch (e: Throwable) {
                     println("Could not parse: $body because of ${e.message}")
                     NetworkResp.error(NetworkError.Error(e))

@@ -4,11 +4,13 @@ import MainAppComponent
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.StackNavigation
 import data.AppStorage
+import data.CompletionsApi
+import data.CompletionsApiImpl
 import data.OpResultResponseConverterFactory
-import data.OpenAIAPI
+import data.openai.OpenAIAPI
 import data.StorageProvider
 import data.StorageProviderImpl
-import data.createOpenAIAPI
+import data.openai.createOpenAIAPI
 import db.createDatabase
 import de.jensklingenberg.ktorfit.Ktorfit
 import feature.addtemplate.AddTemplateComponent
@@ -64,6 +66,9 @@ abstract class AppComponent {
     fun pageNavigation(componentContext: ComponentContext): PageNavigation {
         return MainPageNavigator(this, componentContext)
     }
+
+    protected val CompletionsApiImpl.bind: CompletionsApi
+        @Provides get() = this
 
     @Provides
     @Singleton
