@@ -9,7 +9,6 @@ import data.NetworkResp
 import data.NetworkResponse
 import data.SecretsProvider
 import data.WrappedCompletionResponse
-import data.openai.OpenAIChatCompletionsRequestBody.MessageItem.Companion.ROLE_USER
 import data.parseToResponse
 import data.toStreamingFlow
 import di.Singleton
@@ -42,6 +41,7 @@ class OpenAIAPIWrapper(
             role = ROLE_USER,
             content = listOf(
                 OpenAIChatCompletionsRequestBody.MessageItem(
+                    type = TYPE_TEXT,
                     text = prompt,
                 )
             ),
@@ -58,15 +58,19 @@ class OpenAIAPIWrapper(
     }
 
     private fun Message.map() = OpenAIChatCompletionsRequestBody.Message(
-        role = role,
+        role = when (role) {
+            Message.Role.SYSTEM -> ROLE_SYSTEM
+            Message.Role.ASSISTANT -> ROLE_ASSISTANT
+            Message.Role.USER -> ROLE_USER
+        },
         content = content.map { item ->
             OpenAIChatCompletionsRequestBody.MessageItem(
-                type = item.type,
+                type = if (item.image != null) TYPE_IMAGE_URL else TYPE_TEXT,
                 text = item.text,
-                image_url = item.image_url?.let {
+                image_url = item.image?.let {
                     OpenAIChatCompletionsRequestBody.MessageItem.ImageUrl(
-                        url = it.url,
-                        detail = it.detail,
+                        url = createEncodedImageString(it.base64EncodedImage),
+                        detail = "low",
                     )
                 },
             )
@@ -86,6 +90,7 @@ class OpenAIAPIWrapper(
                     role = ROLE_USER,
                     content = listOf(
                         OpenAIChatCompletionsRequestBody.MessageItem(
+                            type = TYPE_TEXT,
                             text = CompletionsUtils.Prompts.SUMMARIZE,
                         )
                     ),
@@ -121,12 +126,13 @@ class OpenAIAPIWrapper(
             role = "user",
             content = listOf(
                 OpenAIChatCompletionsRequestBody.MessageItem(
+                    type = TYPE_TEXT,
                     text = prompt,
                 ),
                 OpenAIChatCompletionsRequestBody.MessageItem(
-                    type = OpenAIChatCompletionsRequestBody.MessageItem.TYPE_IMAGE_URL,
+                    type = TYPE_IMAGE_URL,
                     image_url = OpenAIChatCompletionsRequestBody.MessageItem.ImageUrl(
-                        url = "data:image/jpeg;base64,$imageEncoded"
+                        url = createEncodedImageString(imageEncoded)
                     )
                 ),
             ),
@@ -181,6 +187,17 @@ class OpenAIAPIWrapper(
         val message: String = "",
         val response: OpenAIChatCompletionResponse? = null,
     )
+
+    companion object {
+        const val TYPE_TEXT = "text"
+        const val TYPE_IMAGE_URL = "image_url"
+
+        const val ROLE_USER = "user"
+        const val ROLE_ASSISTANT = "assistant"
+        const val ROLE_SYSTEM = "system"
+
+        private fun createEncodedImageString(encodedImage: String) = "data:image/jpeg;base64,$encodedImage"
+    }
 }
 
 @Serializable

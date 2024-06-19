@@ -1,6 +1,5 @@
 package data
 
-import data.openai.OpenAIChatCompletionsRequestBody
 import kotlinx.coroutines.flow.Flow
 
 // TODO: Adjust interface and models to be more generic for other APIs
@@ -32,27 +31,21 @@ data class WrappedCompletionResponse(
 )
 
 data class Message(
-    val role: String,
+    val role: Role,
     val content: List<MessageItem>,
 ) {
 
+    enum class Role {
+        SYSTEM, ASSISTANT, USER,
+    }
+
     data class MessageItem(
-        val type: String = TYPE_TEXT,
         val text: String? = null,
-        val image_url: ImageUrl? = null,
-//        val image_url: String? = null,
+        val image: EncodedImage? = null,
     ) {
 
-        data class ImageUrl(
-            val url: String,
-            val detail: String = "low",
+        data class EncodedImage(
+            val base64EncodedImage: String,
         )
-
-        companion object {
-            const val TYPE_TEXT = "text"
-
-            const val ROLE_SYSTEM = "system"
-            const val ROLE_ASSISTANT = "assistant"
-        }
     }
 }

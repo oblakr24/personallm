@@ -10,7 +10,6 @@ import data.NetworkResponse
 import data.SecretsProvider
 import data.WrappedCompletionResponse
 import data.anthropic.AnthropicAPI.Companion.BEARER_TOKEN_PREFIX
-import data.anthropic.AnthropicMessage.Companion.ROLE_USER
 import data.parseToResponse
 import data.toStreamingFlow
 import di.Singleton
@@ -41,8 +40,10 @@ class AnthropicAPIWrapper(
             createImageMessage(it, prompt)
         } ?: AnthropicMessage(
             role = ROLE_USER,
+            system = null,
             content = listOf(
                 AnthropicMessage.Content.Text(
+                    type = TEXT_TYPE,
                     text = prompt,
                 )
             ),
@@ -67,8 +68,10 @@ class AnthropicAPIWrapper(
             messages = prevMessages.map { it.map() } + listOf(
                 AnthropicMessage(
                     role = ROLE_USER,
+                    system = null,
                     content = listOf(
                         AnthropicMessage.Content.Text(
+                            type = TEXT_TYPE,
                             text = CompletionsUtils.Prompts.SUMMARIZE,
                         )
                     ),
@@ -84,20 +87,27 @@ class AnthropicAPIWrapper(
         }
     }
 
-    // TODO: Finalize mapping
     private fun Message.map() = AnthropicMessage(
-        role = role,
+        role = when (role) {
+            Message.Role.SYSTEM -> ROLE_USER
+            Message.Role.ASSISTANT -> ROLE_ASSISTANT
+            Message.Role.USER -> ROLE_USER
+        },
+        system = if (role == Message.Role.SYSTEM) content.firstOrNull()?.text else null,
+        // TODO: Skip content in case of a system prompt?
         content = content.map { item ->
-            if (item.image_url != null) {
+            if (item.image != null) {
                 AnthropicMessage.Content.Image(
+                    type = IMAGE_TPYE,
                     source = AnthropicMessage.ImageSource(
-                        type = "TODO",
-                        media_type = "TODO",
-                        data = item.image_url.url
+                        type = IMAGE_TYPE_BASE64,
+                        media_type = IMAGE_MEDIA_TYPE_JPEG,
+                        data = createEncodedImageString(item.image.base64EncodedImage),
                     )
                 )
             } else {
                 AnthropicMessage.Content.Text(
+                    type = TEXT_TYPE,
                     text = item.text.orEmpty(),
                 )
             }
@@ -121,17 +131,19 @@ class AnthropicAPIWrapper(
 
     private fun createImageMessage(prompt: String, imageEncoded: String) =
         AnthropicMessage(
-            role = "user",
+            role = ROLE_USER,
+            system = null,
             content = listOf(
                 AnthropicMessage.Content.Text(
+                    type = TEXT_TYPE,
                     text = prompt,
                 ),
                 AnthropicMessage.Content.Image(
-                    type = "TODO",
+                    type = IMAGE_TPYE,
                     source = AnthropicMessage.ImageSource(
-                        media_type = "TODO",
-                        type = "TODO",
-                        data = "data:image/jpeg;base64,$imageEncoded",
+                        media_type = IMAGE_MEDIA_TYPE_JPEG,
+                        type = IMAGE_TYPE_BASE64,
+                        data = createEncodedImageString(imageEncoded),
                     ),
                 ),
             ),
@@ -166,6 +178,7 @@ class AnthropicAPIWrapper(
 
     private fun Flow<NetworkResponse<String>>.parseToResponse(): Flow<NetworkResponse<AntropicChatCompletionResponse>> = parseToResponse(
         mapper = { jsonString ->
+            // TODO: Adjust parsing here
             if (jsonString.contains("data:")) {
                 val trimmed = jsonString.substringAfter("data: ")
                 val decoded = json.decodeFromString<AntropicChatCompletionResponse>(trimmed)
@@ -186,10 +199,23 @@ class AnthropicAPIWrapper(
         val message: String = "",
         val response: AntropicChatCompletionResponse? = null,
     )
+
+    companion object {
+        const val IMAGE_TPYE = "image"
+        const val TEXT_TYPE = "text"
+        const val IMAGE_TYPE_BASE64 = "base64"
+        const val IMAGE_MEDIA_TYPE_JPEG = "image/jpeg"
+
+        const val ROLE_USER = "user"
+        const val ROLE_ASSISTANT = "assistant"
+
+        private fun createEncodedImageString(encodedImage: String) = "data:image/jpeg;base64,$encodedImage"
+    }
 }
 
 @Serializable
 private data class ApiErrors(
+    val type: String?,
     val error: ApiErrorResponse?
 )
 
@@ -197,6 +223,4 @@ private data class ApiErrors(
 private data class ApiErrorResponse(
     val message: String,
     val type: String?,
-    val param: String?,
-    val code: String?,
 )

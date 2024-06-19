@@ -51,15 +51,16 @@ data class AnthropicChatCompletionsRequestBody(
 @Serializable
 data class AnthropicMessage(
     val role: String,
+    val system: String?,
     val content: List<Content>
 ) {
     @Serializable
     sealed class Content {
         @Serializable
-        data class Image(val type: String = TYPE_IMAGE, val source: ImageSource) : Content()
+        data class Image(val type: String, val source: ImageSource) : Content()
 
         @Serializable
-        data class Text(val type: String = TYPE_TEXT, val text: String) : Content()
+        data class Text(val type: String, val text: String) : Content()
     }
 
     @Serializable
@@ -68,15 +69,6 @@ data class AnthropicMessage(
         val media_type: String,
         val data: String
     )
-
-    companion object {
-        const val TYPE_TEXT = "text"
-        const val TYPE_IMAGE = "image_url"
-
-        const val ROLE_SYSTEM = "system"
-        const val ROLE_ASSISTANT = "assistant"
-        const val ROLE_USER = "user"
-    }
 }
 
 @Serializable

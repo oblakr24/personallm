@@ -2,10 +2,7 @@ package data.repo
 
 import data.CompletionsApi
 import data.Message
-import data.Message.MessageItem.Companion.ROLE_ASSISTANT
-import data.Message.MessageItem.Companion.ROLE_SYSTEM
 import data.Model
-import data.anthropic.AnthropicMessage.Companion.ROLE_USER
 import db.AppDatabase
 import di.Singleton
 import feature.camera.SharedImage
@@ -148,14 +145,14 @@ class ChatRepo(
             val systemMsg = template?.let {
                 listOf(
                     Message(
-                        role = ROLE_SYSTEM,
+                        role = Message.Role.SYSTEM,
                         content = listOf(Message.MessageItem(text = it.prompt))
                     )
                 )
             } ?: emptyList()
             val prevMsgs = prevMessages.map {
                 Message(
-                    role = if (it.fromUser) ROLE_USER else ROLE_ASSISTANT,
+                    role = if (it.fromUser) Message.Role.USER else Message.Role.ASSISTANT,
                     content = listOf(Message.MessageItem(text = it.content))
                 )
             }
@@ -163,13 +160,15 @@ class ChatRepo(
             val imageEncoded = image?.toByteArray()?.let { byteArray ->
                 Base64.encode(byteArray)
             }
-
+            var anyError = false
             api.getChatCompletions(
                 prompt = prompt,
                 prevMessages = systemMsg + prevMsgs,
                 model = model, imageEncoded = imageEncoded,
             ).collect { resp ->
+                println("Rok1: resp is $resp")
                 resp.doOnError {
+                    anyError = true
                     signaling.handleGenericError(it)
                 }.doOnSuccessSusp {
                     val msg = ChatMessage(
@@ -182,7 +181,10 @@ class ChatRepo(
                     db.insertChatMessage(msg.toEntity(chatId))
                 }
             }
-            updateSummary(chatId = chatId, prompt = prompt, prevMessages = prevMsgs, model = model)
+            if (!anyError) {
+                updateSummary(chatId = chatId, prompt = prompt, prevMessages = prevMsgs, model = model)
+            }
+
         }
         // TODO: Update chat (timestamp, template, etc.)
     }
@@ -197,7 +199,7 @@ class ChatRepo(
         if (prevMessages.isNotEmpty()) return
         val msgs = listOf(
             Message(
-                role = ROLE_USER,
+                role = Message.Role.USER,
                 content = listOf(Message.MessageItem(text = prompt))
             )
         )

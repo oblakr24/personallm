@@ -89,7 +89,7 @@ data class OpenAIChatCompletionsRequestBody(
 
     @Serializable
     data class MessageItem(
-        val type: String = TYPE_TEXT,
+        val type: String,
         val text: String? = null,
         val image_url: ImageUrl? = null,
 //        val image_url: String? = null,
@@ -100,12 +100,5 @@ data class OpenAIChatCompletionsRequestBody(
             val url: String,
             val detail: String = "low",
         )
-
-        companion object {
-            const val TYPE_TEXT = "text"
-            const val TYPE_IMAGE_URL = "image_url"
-
-            const val ROLE_USER = "user"
-        }
     }
 }
