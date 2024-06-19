@@ -105,8 +105,6 @@ data class OpenAIChatCompletionsRequestBody(
             const val TYPE_TEXT = "text"
             const val TYPE_IMAGE_URL = "image_url"
 
-            const val ROLE_SYSTEM = "system"
-            const val ROLE_ASSISTANT = "assistant"
             const val ROLE_USER = "user"
         }
     }

@@ -1,13 +1,11 @@
 package data.repo
 
 import data.CompletionsApi
-import data.IModel
 import data.Message
-import data.Models
-import data.openai.OpenAIChatCompletionsRequestBody
-import data.openai.OpenAIChatCompletionsRequestBody.MessageItem.Companion.ROLE_ASSISTANT
-import data.openai.OpenAIChatCompletionsRequestBody.MessageItem.Companion.ROLE_SYSTEM
-import data.openai.OpenAIChatCompletionsRequestBody.MessageItem.Companion.ROLE_USER
+import data.Message.MessageItem.Companion.ROLE_ASSISTANT
+import data.Message.MessageItem.Companion.ROLE_SYSTEM
+import data.Model
+import data.anthropic.AnthropicMessage.Companion.ROLE_USER
 import db.AppDatabase
 import di.Singleton
 import feature.camera.SharedImage
@@ -41,7 +39,7 @@ class ChatRepo(
         orgChatId: String?,
         prompt: String,
         image: SharedImage?,
-        model: IModel,
+        model: Model,
         template: Template?
     ): String {
         val current = orgChatId?.let { id ->
@@ -84,7 +82,7 @@ class ChatRepo(
     }
 
     // TODO: From user
-    suspend fun edit(chatId: String, messageId: String, newPrompt: String, image: SharedImage?, isFromUser: Boolean, model: IModel, template: Template?) {
+    suspend fun edit(chatId: String, messageId: String, newPrompt: String, image: SharedImage?, isFromUser: Boolean, model: Model, template: Template?) {
         val messages = db.chatMessages(chatId).firstOrNull().orEmpty()
         val orgMessage = messages.first { it.id == messageId }
         val prevMessages = messages.filter { it.timestamp < orgMessage.timestamp }.map { it.toDomain() }
@@ -126,7 +124,7 @@ class ChatRepo(
         prompt: String,
         image: SharedImage?,
         prevMessages: List<ChatMessage>,
-        model: IModel,
+        model: Model,
         template: Template?
     ) {
         val userMessage = orgMessage?.copy(
@@ -184,7 +182,7 @@ class ChatRepo(
                     db.insertChatMessage(msg.toEntity(chatId))
                 }
             }
-            updateSummary(chatId = chatId, prompt = prompt, prevMessages = prevMsgs)
+            updateSummary(chatId = chatId, prompt = prompt, prevMessages = prevMsgs, model = model)
         }
         // TODO: Update chat (timestamp, template, etc.)
     }
@@ -192,17 +190,17 @@ class ChatRepo(
     private fun updateSummary(
         chatId: String,
         prompt: String,
-        prevMessages: List<Message>
+        prevMessages: List<Message>,
+        model: Model,
     ) {
         // TODO: logic to update it more often?
         if (prevMessages.isNotEmpty()) return
         val msgs = listOf(
-            OpenAIChatCompletionsRequestBody.Message(
+            Message(
                 role = ROLE_USER,
-                content = listOf(OpenAIChatCompletionsRequestBody.MessageItem(text = prompt))
+                content = listOf(Message.MessageItem(text = prompt))
             )
         )
-        val model = Models.OpenAI.V3
         scope.launch {
             api.getChatSummary(msgs, model).doOnError {
                 signaling.handleGenericError(it)

@@ -7,7 +7,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.ImageBitmap
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.launchMolecule
-import data.Models
+import data.Model
 import data.openai.OpenAIAPIWrapper
 import di.VMContext
 import di.vmScope
@@ -68,7 +68,7 @@ class ImageComponent(
                         api.getImageCompletions(
                             prompt = "What is on this image?",
                             imageEncoded = encoded,
-                            model = Models.OpenAI.V4_O,
+                            model = Model.defaultImage(),
                         ).collect {
                             println("Resp is $it")
                             completion.value = it.optValue()?.message ?: "Error"

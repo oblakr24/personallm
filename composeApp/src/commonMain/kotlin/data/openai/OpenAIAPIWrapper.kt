@@ -1,9 +1,9 @@
 package data.openai
 
 import data.CompletionsApi
-import data.IModel
+import data.CompletionsUtils
 import data.Message
-import data.Models
+import data.Model
 import data.NetworkError
 import data.NetworkResp
 import data.NetworkResponse
@@ -13,15 +13,9 @@ import data.openai.OpenAIChatCompletionsRequestBody.MessageItem.Companion.ROLE_U
 import data.parseToResponse
 import data.toStreamingFlow
 import di.Singleton
-import io.ktor.client.statement.HttpStatement
-import io.ktor.client.statement.bodyAsChannel
-import io.ktor.utils.io.readUTF8Line
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -40,7 +34,7 @@ class OpenAIAPIWrapper(
         prompt: String,
         imageEncoded: String?,
         prevMessages: List<Message>,
-        model: IModel,
+        model: Model,
     ): Flow<NetworkResponse<WrappedCompletionResponse>> {
         val newMessage = imageEncoded?.let {
             createImageMessage(it, prompt)
@@ -53,42 +47,46 @@ class OpenAIAPIWrapper(
             ),
         )
         val prevMessagesMapped = prevMessages.map { m ->
-            OpenAIChatCompletionsRequestBody.Message(
-                role = m.role,
-                content = m.content.map { item ->
-                    OpenAIChatCompletionsRequestBody.MessageItem(
-                        type = item.type,
-                        text = item.text,
-                        image_url = item.image_url?.let {
-                            OpenAIChatCompletionsRequestBody.MessageItem.ImageUrl(
-                                url = it.url,
-                                detail = it.detail,
-                            )
-                        },
-                    )
-                }
-            )
+            m.map()
         }
         val body = OpenAIChatCompletionsRequestBody(
-            model = if (imageEncoded != null) Models.OpenAI.V4_O.value else model.value,
+            model = if (imageEncoded != null) Model.OpenAI.V4_O.value else model.value,
             messages = prevMessagesMapped + newMessage,
             stream = true,
         )
         return streamCompletions(body)
     }
 
+    private fun Message.map() = OpenAIChatCompletionsRequestBody.Message(
+        role = role,
+        content = content.map { item ->
+            OpenAIChatCompletionsRequestBody.MessageItem(
+                type = item.type,
+                text = item.text,
+                image_url = item.image_url?.let {
+                    OpenAIChatCompletionsRequestBody.MessageItem.ImageUrl(
+                        url = it.url,
+                        detail = it.detail,
+                    )
+                },
+            )
+        }
+    )
+
     override suspend fun getChatSummary(
-        prevMessages: List<OpenAIChatCompletionsRequestBody.Message>,
-        model: IModel,
+        prevMessages: List<Message>,
+        model: Model,
     ): NetworkResponse<String> {
         val body = OpenAIChatCompletionsRequestBody(
             model = model.value,
-            messages = prevMessages + listOf(
+            messages = prevMessages.map {
+                it.map()
+            } + listOf(
                 OpenAIChatCompletionsRequestBody.Message(
                     role = ROLE_USER,
                     content = listOf(
                         OpenAIChatCompletionsRequestBody.MessageItem(
-                            text = "Summarize this conversations in 2-5 words maximum. Only include this summary in your response. Do not include any other messages.",
+                            text = CompletionsUtils.Prompts.SUMMARIZE,
                         )
                     ),
                 )
@@ -106,7 +104,7 @@ class OpenAIAPIWrapper(
     override suspend fun getImageCompletions(
         prompt: String,
         imageEncoded: String,
-        model: IModel,
+        model: Model,
     ): Flow<NetworkResponse<WrappedCompletionResponse>> {
         val body = OpenAIChatCompletionsRequestBody(
             model = model.value,

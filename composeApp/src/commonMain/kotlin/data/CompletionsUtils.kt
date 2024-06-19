@@ -64,3 +64,10 @@ inline fun <reified TData: Any>Flow<NetworkResponse<String>>.parseToResponse(cro
         }
     }
 }
+
+object CompletionsUtils {
+
+    object Prompts {
+        const val SUMMARIZE = "Summarize this conversations in 2-5 words maximum. Only include this summary in your response. Do not include any other messages."
+    }
+}

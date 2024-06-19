@@ -10,18 +10,18 @@ interface CompletionsApi {
         prompt: String,
         imageEncoded: String?,
         prevMessages: List<Message> = emptyList(),
-        model: IModel,
+        model: Model,
     ): Flow<NetworkResponse<WrappedCompletionResponse>>
 
     suspend fun getChatSummary(
-        prevMessages: List<OpenAIChatCompletionsRequestBody.Message>,
-        model: IModel,
+        prevMessages: List<Message>,
+        model: Model,
     ): NetworkResponse<String>
 
     suspend fun getImageCompletions(
         prompt: String,
         imageEncoded: String,
-        model: IModel,
+        model: Model,
     ): Flow<NetworkResponse<WrappedCompletionResponse>>
 }
 
@@ -50,6 +50,9 @@ data class Message(
 
         companion object {
             const val TYPE_TEXT = "text"
+
+            const val ROLE_SYSTEM = "system"
+            const val ROLE_ASSISTANT = "assistant"
         }
     }
 }
