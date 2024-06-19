@@ -9,4 +9,8 @@ class SecretsProvider {
     fun openAIApiKey(): String {
         return AppBuildConfig.OPENAI_API_KEY
     }
+
+    fun anthropicApiKey(): String {
+        return AppBuildConfig.ANTHROPIC_API_KEY
+    }
 }

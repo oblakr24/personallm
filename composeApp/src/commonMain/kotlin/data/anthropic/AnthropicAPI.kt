@@ -43,8 +43,9 @@ data class AnthropicWrappedCompletionResponse(
 @Serializable
 data class AnthropicChatCompletionsRequestBody(
     val model: String,
-    val max_tokens: Int,
-    val messages: List<AnthropicMessage>
+    val max_tokens: Int = 1000,
+    val messages: List<AnthropicMessage>,
+    val stream: Boolean,
 )
 
 @Serializable
