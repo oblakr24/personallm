@@ -1,6 +1,8 @@
 package feature.commonui
 
+import AppColors
 import AppTheme
+import alpha
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,8 +27,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.Uri
+import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
+import coil3.toUri
+import coil3.util.DebugLogger
+import coil3.util.Logger
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 data class MessageDisplayData(
@@ -36,13 +49,18 @@ data class MessageDisplayData(
     val alignedLeft: Boolean,
     val avatar: AvatarData?,
     val imageUri: String?,
+    val error: Boolean,
 )
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MessageDisplay(data: MessageDisplayData, onEditClicked: () -> Unit, onDeleteClicked: () -> Unit, modifier: Modifier = Modifier) {
     val alignment = if (data.alignedLeft) Alignment.Start else Alignment.End
-    val backgroundColor = if (data.alignedLeft) Color.LightGray else Color.Blue
+    val backgroundColor = when {
+        data.error -> AppColors.SecondaryRed
+        data.alignedLeft -> Color.LightGray
+        else -> Color.Blue
+    }
     val textColor = if (data.alignedLeft) Color.Black else Color.White
 
     Column(
@@ -81,11 +99,35 @@ fun MessageDisplay(data: MessageDisplayData, onEditClicked: () -> Unit, onDelete
                         ), Unit)
                     }
                 }
-
+                if (data.imageUri != null) {
+                    Surface(
+                        modifier = Modifier
+                            .size(160.dp)
+                            .padding(vertical = 2.dp)
+                            .border(1.dp, MaterialTheme.colorScheme.primary.alpha(0.2f), RoundedCornerShape(12.dp)),
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(12.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            AsyncImage(
+                                model = data.imageUri.toUri(),
+                                contentDescription = null,
+                                imageLoader = ImageLoader(LocalPlatformContext.current).newBuilder().logger(DebugLogger()).build(),
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                            )
+                        }
+                    }
+                }
                 Text(
                     modifier = Modifier
                         .combinedClickable(onLongClick = {
-                            dropdownState.open()
+                            if (data.error) {
+                                // TODO: Different handling for errors
+                            } else {
+                                dropdownState.open()
+                            }
                         }, onClick = {
 
                         })
@@ -97,23 +139,6 @@ fun MessageDisplay(data: MessageDisplayData, onEditClicked: () -> Unit, onDelete
                     style = MaterialTheme.typography.labelMedium,
                     color = textColor,
                 )
-                if (data.imageUri != null) {
-                    Surface(
-                        modifier = modifier
-                            .size(220.dp)
-                            .padding(vertical = 8.dp)
-                            .border(1.dp, MaterialTheme.colorScheme.background, CircleShape)
-                        ,
-                        color = MaterialTheme.colorScheme.background,
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-//                            AsyncImage(model = Uri.parse(data.imageUri), contentDescription = null)
-                        }
-                    }
-                }
                 Text(
                     modifier = Modifier.padding(2.dp),
                     text = data.date,
@@ -137,6 +162,7 @@ fun MessageDisplayOtherPreview() {
                 alignedLeft = true,
                 avatar = AvatarData.Initials("AB", Color.Blue),
                 imageUri = null,
+                error = false,
             ), onEditClicked = {}, onDeleteClicked = {},
         )
     }
@@ -155,6 +181,7 @@ fun MessageDisplayMinePreview() {
                 alignedLeft = false,
                 avatar = null,
                 imageUri = null,
+                error = false,
             ), onEditClicked = {}, onDeleteClicked = {},
         )
     }

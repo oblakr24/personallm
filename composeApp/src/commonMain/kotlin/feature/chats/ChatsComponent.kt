@@ -35,7 +35,7 @@ class ChatsComponent(
 
     private val scope = vmScope(mainContext)
 
-    private val sortAsc = MutableStateFlow(true)
+    private val sortAsc = MutableStateFlow(false)
     private val chats = sortAsc.flatMapLatest { repo.chatsFlow(it) }
 
     val state: StateFlow<ChatsContentUIState> by lazy {

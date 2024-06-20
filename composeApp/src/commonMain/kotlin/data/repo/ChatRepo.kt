@@ -3,9 +3,12 @@ package data.repo
 import data.CompletionsApi
 import data.Message
 import data.Model
+import data.combinedMessage
 import db.AppDatabase
 import di.Singleton
-import feature.camera.SharedImage
+import feature.sharedimage.ImageLocation
+import feature.sharedimage.ImageResolver
+import feature.sharedimage.SharedImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -29,6 +32,7 @@ class ChatRepo(
     private val api: CompletionsApi,
     private val db: AppDatabase,
     private val signaling: InAppSignaling,
+    private val imageResolver: ImageResolver,
 ) {
     private val scope = CoroutineScope(Dispatchers.Main + Job())
 
@@ -124,14 +128,19 @@ class ChatRepo(
         model: Model,
         template: Template?
     ) {
+        val storedImageLocation = image?.storeLocally(imageResolver)
+
         val userMessage = orgMessage?.copy(
             content = prompt,
+            imageLocation = storedImageLocation,
         ) ?: ChatMessage(
             id = randomUUID(),
             content = prompt,
             fromUser = true,
             timestamp = Clock.System.now(),
-            finished = true
+            finished = true,
+            imageLocation = storedImageLocation,
+            error = false,
         )
 
         scope.launch {
@@ -164,12 +173,25 @@ class ChatRepo(
             api.getChatCompletions(
                 prompt = prompt,
                 prevMessages = systemMsg + prevMsgs,
-                model = model, imageEncoded = imageEncoded,
+                model = model,
+                imageEncoded = imageEncoded,
             ).collect { resp ->
-                println("Rok1: resp is $resp")
-                resp.doOnError {
+                resp.doOnErrorSusp {
                     anyError = true
                     signaling.handleGenericError(it)
+                    val errorMsg = it.error.combinedMessage()
+
+                    val msg = ChatMessage(
+                        id = randomUUID(),
+                        content = "Error:\n$errorMsg",
+                        fromUser = false,
+                        timestamp = Clock.System.now(),
+                        finished = true,
+                        imageLocation = null,
+                        error = true,
+                    )
+                    db.insertChatMessage(msg.toEntity(chatId))
+
                 }.doOnSuccessSusp {
                     val msg = ChatMessage(
                         id = it.id,
@@ -177,6 +199,8 @@ class ChatRepo(
                         fromUser = false,
                         timestamp = Clock.System.now(),
                         finished = it.done,
+                        imageLocation = null,
+                        error = false,
                     )
                     db.insertChatMessage(msg.toEntity(chatId))
                 }
@@ -218,6 +242,8 @@ class ChatRepo(
         timestamp = Instant.fromEpochMilliseconds(timestamp),
         fromUser = fromUser == 1L,
         finished = finished == 1L,
+        imageLocation = localImageUri?.let { ImageLocation.StoredUri(it) },
+        error = error == 1L,
     )
 
     private fun ChatMessage.toEntity(chatId: String) = ChatMessageEntity(
@@ -227,6 +253,8 @@ class ChatRepo(
         fromUser = if (fromUser) 1L else 0L,
         finished = if (finished) 1L else 0L,
         chatId = chatId,
+        localImageUri = imageLocation?.uri,
+        error = if (error) 1L else 0L,
     )
 
     private fun Chat.toEntity() = ChatEntity(
@@ -265,4 +293,6 @@ data class ChatMessage(
     val timestamp: Instant,
     val fromUser: Boolean,
     val finished: Boolean,
+    val imageLocation: ImageLocation.StoredUri?,
+    val error: Boolean,
 )

@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS ChatMessageEntity (
     timestamp INTEGER NOT NULL,  -- Storing as INTEGER (Unix Timestamp)
     fromUser INTEGER NOT NULL,   -- Storing as INTEGER (0 for false, 1 for true)
     finished INTEGER NOT NULL,   -- Storing as INTEGER (0 for false, 1 for true)
+    localImageUri TEXT,
+    error INTEGER NOT NULL,      -- Storing as INTEGER (0 for false, 1 for true)
     FOREIGN KEY(chatId) REFERENCES ChatEntity(id)
 );
 
@@ -22,11 +24,11 @@ FROM ChatMessageEntity;
 
 -- Insert a new message
 insertMessage:
-INSERT INTO ChatMessageEntity (id, chatId, content, timestamp, fromUser, finished)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO ChatMessageEntity (id, chatId, content, timestamp, fromUser, finished, localImageUri, error)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 inserFullMessage:
-INSERT OR REPLACE INTO ChatMessageEntity (id, chatId, content, timestamp, fromUser, finished)
+INSERT OR REPLACE INTO ChatMessageEntity (id, chatId, content, timestamp, fromUser, finished, localImageUri, error)
 VALUES ?;
 
 -- Update an existing message
