@@ -13,6 +13,7 @@ import com.russhwolf.settings.SharedPreferencesSettings
 import data.DatastorePrefsFactory
 import data.createDataStoreWithDefaults
 import db.DriverFactory
+import feature.sharedimage.ImageResolver
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
@@ -58,6 +59,10 @@ actual class PlatformProviders(private val appContext: Context, private val acti
 
     actual fun settingsFactory(): Settings.Factory {
         return SharedPreferencesSettings.Factory(appContext)
+    }
+
+    actual fun imageResolver(): ImageResolver {
+        return ImageResolver(appContext)
     }
 }
 

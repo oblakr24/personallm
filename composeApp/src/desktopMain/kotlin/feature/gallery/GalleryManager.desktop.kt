@@ -2,7 +2,7 @@ package feature.gallery
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import feature.camera.SharedImage
+import feature.sharedimage.SharedImage
 
 actual class GalleryManager actual constructor(onLaunch: () -> Unit) {
     actual fun launch() {

@@ -7,7 +7,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import feature.camera.SharedImage
+import feature.sharedimage.ImageLocation
+import feature.sharedimage.SharedImage
 
 // GalleryManager.android.kt
 @Composable
@@ -17,7 +18,10 @@ actual fun rememberGalleryManager(onResult: (SharedImage?) -> Unit): GalleryMana
     val galleryLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             uri?.let {
-                onResult.invoke(SharedImage(BitmapUtils.getBitmapFromUri(uri, contentResolver)))
+                val bitmap = BitmapUtils.getBitmapFromUri(uri, contentResolver)
+                val location = ImageLocation.TempUri(uri.toString(), uri.toString())
+                val image = SharedImage(bitmap, location)
+                onResult.invoke(image)
             }
         }
     return remember {

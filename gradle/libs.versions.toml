@@ -12,7 +12,7 @@ androidx-activityCompose = "1.9.0"
 #androidx-test-junit = "1.1.5"
 
 # Compose
-coil = "3.0.0-alpha01"
+coil = "3.0.0-alpha06"
 composeTooling = "1.6.8"
 compose-plugin = "1.6.11"
 constraintlayoutComposeMultiplatform = "0.3.1"

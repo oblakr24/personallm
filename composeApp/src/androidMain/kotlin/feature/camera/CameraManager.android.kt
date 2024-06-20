@@ -4,7 +4,6 @@ import android.content.ContentResolver
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -16,30 +15,44 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import com.rokoblak.personallm.R
+import feature.sharedimage.ImageLocation
+import feature.sharedimage.SharedImage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.util.Objects
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.net.URI
 
 // CameraManager.android.kt
 @Composable
 actual fun rememberCameraManager(onResult: (SharedImage?) -> Unit): CameraManager {
     val context = LocalContext.current
     val contentResolver: ContentResolver = context.contentResolver
-    var tempPhotoUri by remember { mutableStateOf(value = Uri.EMPTY) }
+    var tempPhotoUriSharable by remember { mutableStateOf<String?>(value = null) }
+    var tempPhotoUriOriginal by remember { mutableStateOf<String?>(value = null) }
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
         onResult = { success ->
             if (success) {
-                onResult.invoke(SharedImage(BitmapUtils.getBitmapFromUri(tempPhotoUri, contentResolver)))
+                val bitmapUri = tempPhotoUriSharable?.toUri() ?: return@rememberLauncherForActivityResult
+                val bitmap = BitmapUtils.getBitmapFromUri(bitmapUri, contentResolver)
+                val location = ImageLocation.TempUri(sharableUri = tempPhotoUriSharable.orEmpty(), originalUri = tempPhotoUriOriginal.orEmpty())
+                val image = SharedImage(bitmap, location)
+                onResult.invoke(image)
             }
         }
     )
     return remember {
         CameraManager(
             onLaunch = {
-                tempPhotoUri = ComposeFileProvider.getImageUri(context)
-                cameraLauncher.launch(tempPhotoUri)
+                val location = ComposeFileProvider.getTempImageUri(context)
+                tempPhotoUriOriginal = location.originalUri
+                tempPhotoUriSharable = location.sharableUri
+                cameraLauncher.launch(tempPhotoUriSharable!!.toUri())
             }
         )
     }
@@ -55,43 +68,29 @@ actual class CameraManager actual constructor(
 
 class ComposeFileProvider : FileProvider(R.xml.provider_paths) {
     companion object {
-        fun getImageUri(context: Context): Uri {
+        fun getTempImageUri(context: Context): ImageLocation.TempUri {
             val tempFile = File.createTempFile(
                 "picture_${System.currentTimeMillis()}", ".jpg", context.cacheDir
             ).apply {
                 createNewFile()
             }
             val authority = context.applicationContext.packageName + ".provider"
-            return getUriForFile(
-                Objects.requireNonNull(context),
+            val sharableUri = getUriForFile(
+                context,
                 authority,
                 tempFile,
             )
+            return ImageLocation.TempUri(sharableUri = sharableUri.toString(), originalUri = tempFile.toUri().toString())
         }
-    }
-}
 
-actual class SharedImage(private val bitmap: android.graphics.Bitmap?) {
-    actual fun toByteArray(): ByteArray? {
-        return if (bitmap != null) {
-            val byteArrayOutputStream = ByteArrayOutputStream()
-            @Suppress("MagicNumber") bitmap.compress(
-                android.graphics.Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream
+        fun getSharableStoredUri(file: File, context: Context): Uri? {
+            val authority = context.applicationContext.packageName + ".provider"
+            val sharableUri = getUriForFile(
+                context,
+                authority,
+                file,
             )
-            byteArrayOutputStream.toByteArray()
-        } else {
-            println("toByteArray returned null")
-            null
-        }
-    }
-
-    actual fun toImageBitmap(): ImageBitmap? {
-        val byteArray = toByteArray()
-        return if (byteArray != null) {
-            return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size).asImageBitmap()
-        } else {
-            println("toByteArray returned null")
-            null
+            return sharableUri
         }
     }
 }

@@ -2,12 +2,15 @@ package feature.gallery
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import feature.camera.SharedImage
+import feature.sharedimage.ImageLocation
+import feature.sharedimage.SharedImage
+import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 import platform.UIKit.UIImage
 import platform.UIKit.UIImagePickerController
 import platform.UIKit.UIImagePickerControllerDelegateProtocol
 import platform.UIKit.UIImagePickerControllerEditedImage
+import platform.UIKit.UIImagePickerControllerImageURL
 import platform.UIKit.UIImagePickerControllerOriginalImage
 import platform.UIKit.UIImagePickerControllerSourceType
 import platform.UIKit.UINavigationControllerDelegateProtocol
@@ -28,7 +31,12 @@ actual fun rememberGalleryManager(onResult: (SharedImage?) -> Unit): GalleryMana
                 ) as? UIImage ?: didFinishPickingMediaWithInfo.getValue(
                     UIImagePickerControllerOriginalImage
                 ) as? UIImage
-                onResult.invoke(SharedImage(image))
+
+                val imageUrl = didFinishPickingMediaWithInfo[UIImagePickerControllerImageURL] as? NSURL
+                val uri = imageUrl?.path.orEmpty()
+
+                val loc = ImageLocation.TempUri(uri, uri)
+                onResult.invoke(SharedImage(image, loc))
                 picker.dismissViewControllerAnimated(true, null)
             }
         }

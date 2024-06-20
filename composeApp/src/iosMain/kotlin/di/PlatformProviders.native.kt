@@ -7,6 +7,7 @@ import com.russhwolf.settings.NSUserDefaultsSettings
 import com.russhwolf.settings.Settings
 import data.DatastorePrefsFactory
 import db.DriverFactory
+import feature.sharedimage.ImageResolver
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -63,5 +64,9 @@ actual class PlatformProviders {
 
     actual fun settingsFactory(): Settings.Factory {
         return NSUserDefaultsSettings.Factory()
+    }
+
+    actual fun imageResolver(): ImageResolver {
+        return ImageResolver()
     }
 }
