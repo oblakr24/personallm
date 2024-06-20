@@ -1,8 +1,8 @@
 package feature.chat
 
-import feature.camera.SharedImage
 import feature.commonui.MessageDisplayData
 import feature.commonui.TemplateDisplayData
+import feature.sharedimage.SharedImage
 
 sealed interface ChatAction {
     data object SendClicked : ChatAction

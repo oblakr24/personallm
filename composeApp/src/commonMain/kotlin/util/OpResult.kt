@@ -35,6 +35,14 @@ sealed interface OpResult<out T : Any?, out E : RootError> {
         return this
     }
 
+    suspend fun doOnErrorSusp(block: suspend (error: Error<E>) -> Unit): OpResult<T, E> {
+        when (this) {
+            is Done -> Unit
+            is Error -> block(this)
+        }
+        return this
+    }
+
     fun doOnSuccess(block: (data: T) -> Unit): OpResult<T, E> {
         when (this) {
             is Done -> block(data)

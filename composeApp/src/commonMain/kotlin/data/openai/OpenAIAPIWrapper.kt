@@ -176,9 +176,10 @@ class OpenAIAPIWrapper(
             }
         },
         errorMapper = { body ->
-            val error = json.decodeFromString<ApiErrors>(body)
+            val errors = json.decodeFromString<ApiErrors>(body)
+            val error = errors.error
             NetworkError.NotSuccessful(
-                body = error.error?.message ?: "Error", code = 400
+                body = error?.message ?: "Error", code = null, type = error?.type, codeString = error?.code,
             )
         }
     )

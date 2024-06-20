@@ -150,7 +150,7 @@ class ChatRepo(
                     )
                 )
             } ?: emptyList()
-            val prevMsgs = prevMessages.map {
+            val prevMsgs = prevMessages.filterNot { it.error }.map {
                 Message(
                     role = if (it.fromUser) Message.Role.USER else Message.Role.ASSISTANT,
                     content = listOf(Message.MessageItem(text = it.content))

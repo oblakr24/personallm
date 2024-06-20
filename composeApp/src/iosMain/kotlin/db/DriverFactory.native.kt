@@ -7,6 +7,6 @@ import personallm.db.Database
 
 actual class DriverFactory {
     actual fun createDriver(): SqlDriver {
-        return NativeSqliteDriver(Database.Schema.synchronous(), "app_main.db")
+        return NativeSqliteDriver(Database.Schema.synchronous(), "app_main_v${Database.DB_VERSION}.db")
     }
 }

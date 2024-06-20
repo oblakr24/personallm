@@ -1,13 +1,13 @@
 package data.repo
 
-import util.OpResult
 import androidx.compose.material3.SnackbarDuration
 import data.NetworkError
 import di.Singleton
 import io.github.aakira.napier.Napier
 import me.tatarka.inject.annotations.Inject
-import util.SingleEventFlow
 import util.AppSnackbarData
+import util.OpResult
+import util.SingleEventFlow
 
 @Singleton
 @Inject
@@ -22,20 +22,29 @@ class InAppSignaling {
             return
         }
 
-        val subtitle = when (val e = error.error) {
-            is NetworkError.Error -> e.ex.message
+        val title = when (val e = error.error) {
+            is NetworkError.Error -> e.ex.message ?: "Error"
             NetworkError.NoData -> "No data"
-            is NetworkError.NotSuccessful -> null
+            is NetworkError.NotSuccessful -> e.body
+        }
+        val subtitle = when (val e = error.error) {
+            is NetworkError.Error -> null
+            NetworkError.NoData -> null
+            is NetworkError.NotSuccessful -> {
+                val stringBuilder = StringBuilder()
+                stringBuilder.append(e.additionalInfo())
+                stringBuilder.toString()
+            }
         }
         val duration = if (subtitle == null) {
-            SnackbarDuration.Short
+            SnackbarDuration.Long
         } else {
             SnackbarDuration.Indefinite
         }
         val showCloseRow = subtitle != null
         snackbars.send(
             AppSnackbarData(
-                title = error.error.toString(),
+                title = title,
                 subtitle = subtitle,
                 type = AppSnackbarData.Type.ERROR,
                 duration = duration,

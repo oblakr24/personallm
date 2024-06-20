@@ -188,9 +188,10 @@ class AnthropicAPIWrapper(
             }
         },
         errorMapper = { body ->
-            val error = json.decodeFromString<ApiErrors>(body)
+            val errors = json.decodeFromString<ApiErrors>(body)
+            val error = errors.error
             NetworkError.NotSuccessful(
-                body = error.error?.message ?: "Error", code = 400
+                body = error?.message ?: "Error", code = null, type = error?.type, codeString = error?.code,
             )
         }
     )
@@ -223,4 +224,6 @@ private data class ApiErrors(
 private data class ApiErrorResponse(
     val message: String,
     val type: String?,
+    val param: String?,
+    val code: String?,
 )

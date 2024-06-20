@@ -29,8 +29,10 @@ class OpResultResponseConverterFactory : Converter.Factory {
                             } else {
                                 OpResult.Error(
                                     NetworkError.NotSuccessful(
-                                        response.bodyAsText(),
-                                        response.status.value
+                                        body = response.bodyAsText(),
+                                        code = response.status.value,
+                                        codeString = null,
+                                        type = null,
                                     )
                                 )
                             }
