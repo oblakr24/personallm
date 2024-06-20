@@ -61,7 +61,11 @@ fun MessageDisplay(data: MessageDisplayData, onEditClicked: () -> Unit, onDelete
         data.alignedLeft -> Color.LightGray
         else -> Color.Blue
     }
-    val textColor = if (data.alignedLeft) Color.Black else Color.White
+    val textColor = when {
+        data.error -> Color.White
+        data.alignedLeft -> Color.Black
+        else -> Color.White
+    }
 
     Column(
         modifier = modifier.fillMaxWidth(),

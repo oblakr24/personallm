@@ -46,4 +46,8 @@ actual class ImageResolver {
             }
         }
     }
+
+    actual fun resolveUri(imageLocation: ImageLocation.StoredUri): String {
+        return imageLocation.uri
+    }
 }

@@ -81,4 +81,8 @@ actual class ImageResolver(private val appContext: Context) {
             }
         }
     }
+
+    actual fun resolveUri(imageLocation: ImageLocation.StoredUri): String {
+        return imageLocation.uri
+    }
 }

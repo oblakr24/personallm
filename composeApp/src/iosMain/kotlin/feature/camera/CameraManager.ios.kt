@@ -2,17 +2,13 @@ package feature.camera
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.toComposeImageBitmap
 import feature.sharedimage.ImageLocation
 import feature.sharedimage.SharedImage
-import kotlinx.cinterop.ByteVar
-import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.get
-import kotlinx.cinterop.reinterpret
-import org.jetbrains.skia.Image
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSURL
+import platform.Foundation.NSUserDomainMask
+import platform.Foundation.writeToFile
 import platform.UIKit.UIApplication
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
@@ -22,13 +18,9 @@ import platform.UIKit.UIImagePickerControllerDelegateProtocol
 import platform.UIKit.UIImagePickerControllerEditedImage
 import platform.UIKit.UIImagePickerControllerOriginalImage
 import platform.UIKit.UIImagePickerControllerSourceType
-import platform.UIKit.UIImageWriteToSavedPhotosAlbum
 import platform.UIKit.UINavigationControllerDelegateProtocol
 import platform.darwin.NSObject
-import platform.UIKit.UIImagePickerControllerEditedImage
-import platform.UIKit.*
-import platform.Foundation.*
-import platform.UIKit.UIImagePickerControllerOriginalImage
+import util.randomUUID
 
 // CameraManager.ios.kt
 @Composable
@@ -46,11 +38,12 @@ actual fun rememberCameraManager(onResult: (SharedImage?) -> Unit): CameraManage
                             UIImagePickerControllerOriginalImage
                         ) as? UIImage
 
-                val imageUrl = didFinishPickingMediaWithInfo[UIImagePickerControllerImageURL] as? NSURL
-                val uri = imageUrl?.path.orEmpty()
-                val loc: ImageLocation = ImageLocation.StoredUri(uri)
-                onResult.invoke(SharedImage(image, loc))
-                picker.dismissViewControllerAnimated(true, null)
+                if (image != null) {
+                    val imageUrl = saveImage(image)
+                    val loc: ImageLocation = ImageLocation.StoredUri(imageUrl, fullyResolved = false)
+                    onResult.invoke(SharedImage(image, loc))
+                    picker.dismissViewControllerAnimated(true, null)
+                }
             }
         }
     }
@@ -66,6 +59,21 @@ actual fun rememberCameraManager(onResult: (SharedImage?) -> Unit): CameraManage
             )
         }
     }
+}
+
+private fun saveImage(image: UIImage): String {
+    val documentsDirectory = NSSearchPathForDirectoriesInDomains(
+        NSDocumentDirectory, NSUserDomainMask, true
+    ).firstOrNull()
+
+    val fileName = "captured_${randomUUID()}.jpg"
+    val filePath = "$documentsDirectory/$fileName"
+    val fileURL = NSURL.fileURLWithPath(filePath)
+
+    val imageData = UIImageJPEGRepresentation(image, 0.8)
+
+    imageData?.writeToFile(filePath, atomically = true)
+    return fileName
 }
 
 actual class CameraManager actual constructor(

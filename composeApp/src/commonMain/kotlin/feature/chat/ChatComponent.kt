@@ -17,6 +17,7 @@ import di.VMContext
 import di.vmScope
 import feature.commonui.CommonUIMappers.toDisplay
 import feature.commonui.MessageDisplayData
+import feature.sharedimage.ImageResolver
 import feature.sharedimage.SharedImage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -48,6 +49,7 @@ class ChatComponent(
     private val repo: ChatRepo,
     private val templatesRepo: TemplatesRepo,
     private val signaling: InAppSignaling,
+    private val imageResolver: ImageResolver,
     @Assisted private val vmContext: VMContext,
     @Assisted private val config: DefaultRootComponent.Config.Chat,
 ): VMContext by vmContext, RouteNavigator by nav {
@@ -126,7 +128,9 @@ class ChatComponent(
                 date = it.timestamp.formatTimeElapsed(),
                 alignedLeft = !it.fromUser,
                 avatar = null,
-                imageUri = it.imageLocation?.uri,
+                imageUri = it.imageLocation?.let {
+                    imageResolver.resolveUri(it)
+                },
                 error = it.error,
             )
         }.orEmpty()
@@ -179,11 +183,11 @@ class ChatComponent(
                 scope.launch {
                     if (editState != null && existingChatId != null) {
                         repo.edit(chatId = existingChatId, messageId = editState.messageId, newPrompt = prompt, image = image, model = model, isFromUser = true, template = template)
-                        inputState.update { it.copy(editState = null, expanded = false, attachedImage = null) }
                     } else {
                         val newChatId = repo.submitNew(existingChatId, prompt = prompt, image = image, model = model, template = template)
                         chatId.value = newChatId
                     }
+                    inputState.update { it.copy(editState = null, expanded = false, attachedImage = null) }
                 }
             }
             is ChatAction.TextChanged -> {

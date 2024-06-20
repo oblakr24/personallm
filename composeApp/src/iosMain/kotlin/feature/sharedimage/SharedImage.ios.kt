@@ -8,6 +8,12 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.get
 import kotlinx.cinterop.reinterpret
 import org.jetbrains.skia.Image
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSDocumentationDirectory
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSSearchPathForDirectoriesInDomains
+import platform.Foundation.NSURL
+import platform.Foundation.NSUserDomainMask
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
 
@@ -22,6 +28,18 @@ actual class ImageResolver {
                 )
             }
         }
+    }
+
+    actual fun resolveUri(imageLocation: ImageLocation.StoredUri): String {
+        if (imageLocation.fullyResolved) {
+            return imageLocation.uri
+        }
+        val documentsDirectory = NSSearchPathForDirectoriesInDomains(
+            NSDocumentDirectory, NSUserDomainMask, true
+        ).firstOrNull()
+        val filePath = "$documentsDirectory/${imageLocation.uri}"
+        val fileURL = NSURL.fileURLWithPath(filePath)
+        return fileURL.absoluteString.orEmpty()
     }
 }
 
