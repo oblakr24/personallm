@@ -3,6 +3,7 @@ package di
 import com.russhwolf.settings.Settings
 import data.DatastorePrefsFactory
 import db.DriverFactory
+import feature.sharedimage.ImageResolver
 import navigation.IntentHandler
 
 expect class PlatformProviders {
@@ -10,6 +11,8 @@ expect class PlatformProviders {
     fun initialize()
 
     fun driverFactory(): DriverFactory
+
+    fun imageResolver(): ImageResolver
 
     fun datastoreFactory(): DatastorePrefsFactory
 

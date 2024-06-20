@@ -12,14 +12,14 @@ actual class PermissionsManager actual constructor(private val callback: Permiss
     PermissionHandler {
 
     override fun askPermissionNormal(permission: PermissionType) {
-        TODO("Not yet implemented")
+        callback.onPermissionStatus(permission, PermissionStatus.GRANTED)
     }
 
     override fun isPermissionGranted(permission: PermissionType): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 
     override fun launchSettings() {
-        TODO("Not yet implemented")
+
     }
 }

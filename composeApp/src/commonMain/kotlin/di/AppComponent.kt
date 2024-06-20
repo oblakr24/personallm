@@ -26,6 +26,7 @@ import feature.main.MainComponent
 import feature.main.MainPageNavigator
 import feature.main.PageNavigation
 import feature.samplerequest.SampleRequestComponent
+import feature.sharedimage.ImageResolver
 import feature.templates.TemplatesComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
@@ -126,6 +127,12 @@ abstract class AppComponent {
     @Singleton
     fun storageProvider(json: Json): StorageProvider {
         return StorageProviderImpl(platformProviders, json)
+    }
+
+    @Provides
+    @Singleton
+    fun imageResolver(): ImageResolver {
+        return platformProviders.imageResolver()
     }
 
     @Provides

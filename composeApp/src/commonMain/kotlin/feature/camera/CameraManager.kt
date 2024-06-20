@@ -2,6 +2,7 @@ package feature.camera
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.ImageBitmap
+import feature.sharedimage.SharedImage
 
 // CameraManager.kt
 @Composable
@@ -11,9 +12,4 @@ expect class CameraManager(
     onLaunch: () -> Unit
 ) {
     fun launch()
-}
-
-expect class SharedImage {
-    fun toByteArray(): ByteArray?
-    fun toImageBitmap(): ImageBitmap?
 }
