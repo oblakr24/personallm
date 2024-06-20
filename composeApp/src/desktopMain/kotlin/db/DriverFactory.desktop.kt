@@ -12,7 +12,7 @@ actual class DriverFactory {
         if (!dbDirectory.exists()) {
             dbDirectory.mkdirs()
         }
-        val dbFilePath = File(dbDirectory, "personallm.db")
+        val dbFilePath = File(dbDirectory, "personallm_version${Database.DB_VERSION}.db")
         println("Database path: ${dbFilePath.absolutePath}")
 
         if (!dbFilePath.exists()) {

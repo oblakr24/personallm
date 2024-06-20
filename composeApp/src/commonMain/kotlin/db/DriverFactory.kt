@@ -12,3 +12,7 @@ fun createDatabase(driverFactory: DriverFactory): Database {
     val database = Database(driver)
     return database
 }
+
+val Database.Companion.DB_VERSION: Int get() {
+    return 2
+}

@@ -36,3 +36,5 @@ google-services.json
 
 iosApp/iosApp.xcodeproj/project.xcworkspace/xcuserdata/
 *xcuserdata/
+
+composeApp/java.io.tmpdir/
