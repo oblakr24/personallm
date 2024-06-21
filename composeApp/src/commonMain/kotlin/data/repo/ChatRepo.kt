@@ -82,6 +82,12 @@ class ChatRepo(
         }
     }
 
+    suspend fun deleteChats(ids: Set<String>) {
+        scope.launch {
+            db.deleteChats(ids)
+        }
+    }
+
     // TODO: From user
     suspend fun edit(chatId: String, messageId: String, newPrompt: String, image: SharedImage?, isFromUser: Boolean, model: Model, template: Template?) {
         val messages = db.chatMessages(chatId).firstOrNull().orEmpty()

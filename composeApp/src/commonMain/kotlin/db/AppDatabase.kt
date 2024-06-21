@@ -90,6 +90,10 @@ class AppDatabase(
         db.chatMessageEntityQueries.deleteById(id)
     }
 
+    suspend fun deleteChats(ids: Set<String>) {
+        db.chatEntityQueries.deleteChatsByIds(ids)
+    }
+
     suspend fun deleteChatMessagesAfter(timestamp: Instant) {
         db.chatMessageEntityQueries.deleteMessagesAboveTimestamp(timestamp = timestamp.toEpochMilliseconds())
     }

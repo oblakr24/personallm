@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS ChatMessageEntity (
     finished INTEGER NOT NULL,   -- Storing as INTEGER (0 for false, 1 for true)
     localImageUri TEXT,
     error INTEGER NOT NULL,      -- Storing as INTEGER (0 for false, 1 for true)
-    FOREIGN KEY(chatId) REFERENCES ChatEntity(id)
+    FOREIGN KEY(chatId) REFERENCES ChatEntity(id) ON DELETE CASCADE
 );
 
 -- Queries

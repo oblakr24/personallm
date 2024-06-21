@@ -35,3 +35,8 @@ updateChatSummaryById:
 UPDATE ChatEntity
 SET summary = ?
 WHERE id = ?;
+
+-- Delete chats by IDs
+deleteChatsByIds:
+DELETE FROM ChatEntity
+WHERE id IN ?;
