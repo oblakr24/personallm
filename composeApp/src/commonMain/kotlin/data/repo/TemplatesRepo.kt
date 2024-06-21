@@ -39,6 +39,10 @@ class TemplatesRepo(
         }
     }
 
+    suspend fun deleteByIds(ids: Set<String>) {
+        db.deleteTemplatesByIds(ids)
+    }
+
     private fun Template.toEntity() = TemplateEntity(
         id = id,
         version = 1,

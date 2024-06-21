@@ -54,6 +54,10 @@ class AppDatabase(
             .mapToOneOrNull(scope.coroutineContext).filterNotNull()
     }
 
+    suspend fun deleteTemplatesByIds(ids: Set<String>) {
+        db.templateEntityQueries.deleteTemplatesByIDs(ids)
+    }
+
     suspend fun insertOrUpdateChat(entity: ChatEntity) {
         db.chatEntityQueries.insertOrReplaceChat(
             id = entity.id,

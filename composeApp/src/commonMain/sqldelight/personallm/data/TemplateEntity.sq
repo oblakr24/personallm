@@ -27,3 +27,8 @@ VALUES (?, ?, ?, ?, ?, ?);
 inserFullTemplate:
 INSERT OR REPLACE INTO TemplateEntity (id, version, creationTimestamp, updateTimestamp, title, prompt)
 VALUES ?;
+
+-- Delete templates by IDs
+deleteTemplatesByIDs:
+DELETE FROM TemplateEntity
+WHERE id IN ?;
