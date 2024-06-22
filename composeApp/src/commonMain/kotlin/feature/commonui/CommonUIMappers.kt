@@ -6,13 +6,14 @@ import util.formattedReadable
 
 object CommonUIMappers {
 
-    fun Template.toDisplay(): TemplateDisplayData {
+    fun Template.toDisplay(checked: Boolean? = null): TemplateDisplayData {
         val appendedUpdateAt = updatedAt?.let { " (updated ${it.formattedReadable()})" } ?: ""
         return TemplateDisplayData(
             id = id,
             title = buildAnnotatedString { append(title) },
             subtitle = buildAnnotatedString { append(prompt) },
             date = "Created ${createdAt.formattedReadable()}$appendedUpdateAt",
+            checked = checked,
         )
     }
 }

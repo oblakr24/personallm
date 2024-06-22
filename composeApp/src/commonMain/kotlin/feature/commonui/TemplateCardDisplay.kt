@@ -87,6 +87,7 @@ fun TemplateCardDisplayPreview() {
                 title = AnnotatedString("Conv title"),
                 subtitle = AnnotatedString("conv subtitle long message to make it really long and fit more than one line"),
                 date = "13th Mar 2022 19:45:44",
+                checked = null,
             ),
             onClick = {},
         )
@@ -103,6 +104,7 @@ fun TemplateCardDisplayLongTitlePreview() {
                 title = AnnotatedString("Conv title - Very Long name"),
                 subtitle = AnnotatedString("conv subtitle long message to make it really long and fit more than one line"),
                 date = "13th Mar 2022 19:45:44",
+                checked = null,
             ),
             onClick = {},
         )

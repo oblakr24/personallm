@@ -2,9 +2,14 @@ package feature.commonui
 
 import AppTheme
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,11 +27,13 @@ data class TemplateDisplayData(
     val title: AnnotatedString,
     val subtitle: AnnotatedString,
     val date: String,
+    val checked: Boolean?,
 )
 
 @Composable
 fun TemplateDisplay(
     data: TemplateDisplayData,
+    onCheckedChanged: (Boolean) -> Unit,
     background: Color = MaterialTheme.colorScheme.background,
     modifier: Modifier = Modifier,
 ) {
@@ -37,11 +44,32 @@ fun TemplateDisplay(
             .background(background)
             .padding(8.dp),
     ) {
-        val (title, subtitle, date) = createRefs()
+        val (checkbox, title, subtitle, date) = createRefs()
+
+        if (data.checked != null) {
+            Checkbox(
+                modifier = Modifier
+                    .constrainAs(checkbox) {
+                        start.linkTo(parent.start)
+                        top.linkTo(parent.top)
+                    }
+                    .height(36.dp),
+                checked = data.checked,
+                onCheckedChange = onCheckedChanged,
+                colors = CheckboxDefaults.colors(),
+            )
+        } else {
+            Spacer(modifier = Modifier
+                .widthIn(8.dp)
+                .constrainAs(checkbox) {
+                    start.linkTo(parent.start)
+                    top.linkTo(parent.top)
+                })
+        }
 
         Text(
             modifier = Modifier.constrainAs(title) {
-                start.linkTo(parent.start, 12.dp)
+                start.linkTo(checkbox.end, 12.dp)
                 top.linkTo(parent.top)
                 end.linkTo(date.start, 4.dp)
                 width = Dimension.fillToConstraints
@@ -50,7 +78,7 @@ fun TemplateDisplay(
         )
         Text(
             modifier = Modifier.constrainAs(subtitle) {
-                start.linkTo(parent.start, 12.dp)
+                start.linkTo(checkbox.end, 12.dp)
                 top.linkTo(title.bottom)
                 end.linkTo(parent.end)
                 width = Dimension.fillToConstraints
@@ -81,7 +109,9 @@ fun TemplateDisplayPreview() {
                 title = AnnotatedString("Conv title"),
                 subtitle = AnnotatedString("conv subtitle long message to make it really long and fit more than one line"),
                 date = "13th Mar 2022 19:45:44",
+                checked = null,
             ),
+            onCheckedChanged = {},
         )
     }
 }
@@ -96,7 +126,9 @@ fun TemplateDisplayLongTitlePreview() {
                 title = AnnotatedString("Conv title - Very Long name"),
                 subtitle = AnnotatedString("conv subtitle long message to make it really long and fit more than one line"),
                 date = "13th Mar 2022 19:45:44",
+                checked = true,
             ),
+            onCheckedChanged = {},
         )
     }
 }

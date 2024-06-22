@@ -133,7 +133,8 @@ kotlin {
             api(libs.arkivanov.decompose)
             implementation(libs.arkivanov.decompose.extensions)
 
-            implementation(libs.coroutines.extensions)
+
+            implementation(libs.coroutines.extensions.sqldelight)
 
             implementation(libs.kotlinx.serialization.json)
 

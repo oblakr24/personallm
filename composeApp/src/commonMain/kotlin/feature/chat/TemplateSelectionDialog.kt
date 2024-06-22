@@ -38,7 +38,7 @@ fun TemplateSelectionDialog(displays: List<TemplateDisplayData>, selectedId: Str
                 onSelected(display)
             }, verticalAlignment = Alignment.CenterVertically) {
 
-                TemplateDisplay(modifier = Modifier.weight(1f), background = Color.Transparent, data = display)
+                TemplateDisplay(modifier = Modifier.weight(1f), background = Color.Transparent, data = display, onCheckedChanged = {})
 
                 Spacer(Modifier.width(2.dp))
                 if (display.id == selectedId) {
